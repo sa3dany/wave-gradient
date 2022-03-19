@@ -45,17 +45,18 @@ export default function HomePage() {
 
     const renderNode = canvas_3.current;
     const sizingNode = canvas_3.current.parentNode;
+
     const { clientWidth: width, scrollHeight: height } = sizingNode;
+    const aspect = height / width;
 
     const scene = new Scene();
-    // const camera = new PerspectiveCamera(75, width / height, 0.1, 1000);
-    // const
     const orthoCamera = new OrthographicCamera(
-      width / -2,
-      width / 2,
+      (aspect * width) / -0.88,
+      (aspect * width) / 0.88,
+      height / 2,
       height / -2,
-      1,
-      1000
+      -2e3,
+      2e3
     );
 
     const renderer = new WebGL1Renderer({ canvas: renderNode });
@@ -64,15 +65,19 @@ export default function HomePage() {
     const onResize = () => {
       const sizingNode = canvas_3.current.parentNode;
       const { clientWidth: width, scrollHeight: height } = sizingNode;
-      // camera.aspect = width / height;
+      const aspect = height / width;
+      orthoCamera.left = (aspect * width) / -0.88;
+      orthoCamera.right = (aspect * width) / 0.88;
+      orthoCamera.top = height / 2;
+      orthoCamera.bottom = height / -2;
       orthoCamera.updateProjectionMatrix();
       renderer.setSize(width, height);
     };
     window.addEventListener("resize", onResize);
 
     const geometry = new PlaneGeometry(
-      1,
-      1,
+      width,
+      height,
       width * conf.density[0],
       height * conf.density[1]
     );
@@ -82,8 +87,6 @@ export default function HomePage() {
     });
     const plane = new Mesh(geometry, material);
     scene.add(plane);
-
-    // orthoCamera.position.z = 5;
 
     function animate() {
       const sizingNode = canvas_3.current.parentNode;
