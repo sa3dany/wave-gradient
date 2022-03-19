@@ -8,14 +8,20 @@ export default function HomePage() {
   const [canvas_1, canvas_2] = [useRef(), useRef()];
 
   useEffect(() => {
-    new Gradient().initGradient("#stripe-canvas");
+    const gradient_1 = new Gradient().initGradient("#stripe-canvas");
     COLORS.forEach((hex, i) => {
       canvas_1.current.style.setProperty(`--gradient-color-${i + 1}`, hex);
     });
-    new Gradient({ wireframe: true }).initGradient("#stripe-canvas-wireframe");
+    const gradient_2 = new Gradient({ wireframe: true }).initGradient(
+      "#stripe-canvas-wireframe"
+    );
     ["#000", "#000"].forEach((hex, i) => {
       canvas_2.current.style.setProperty(`--gradient-color-${i + 1}`, hex);
     });
+    return () => {
+      gradient_1.disconnect();
+      gradient_2.disconnect();
+    };
   });
 
   return (
@@ -24,33 +30,20 @@ export default function HomePage() {
         <title>3D Plane Gradients</title>
       </Head>
 
-      <section className="relative">
+      <section className="relative mx-auto max-w-screen-lg">
         <canvas
           id="stripe-canvas"
           ref={canvas_1}
           data-transition-in
           style={{ height: "calc(50vh - 2.5*1.5rem)" }}
-          className="w-full rounded-3xl mx-auto max-w-screen-lg"
+          className="w-full rounded-3xl"
         />
         <canvas
           id="stripe-canvas-wireframe"
           ref={canvas_2}
           data-transition-in
           style={{ height: "calc(50vh - 2.5*1.5rem)" }}
-          className="w-full rounded-3xl mx-auto max-w-screen-lg absolute top-0 opacity-20"
-        />
-      </section>
-
-      <section className="relative">
-        <canvas
-          data-transition-in
-          style={{ height: "calc(50vh - 2.5*1.5rem)" }}
-          className="w-full rounded-3xl mx-auto max-w-screen-lg"
-        />
-        <canvas
-          data-transition-in
-          style={{ height: "calc(50vh - 2.5*1.5rem)" }}
-          className="w-full rounded-3xl mx-auto max-w-screen-lg absolute top-0 opacity-20"
+          className="w-full rounded-3xl absolute top-0 opacity-5"
         />
       </section>
     </main>
