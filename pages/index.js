@@ -2,14 +2,7 @@ import Head from "next/head";
 import { useEffect, useRef } from "react";
 import { Gradient } from "../lib/vendor/gradient";
 
-import {
-  Scene,
-  PerspectiveCamera,
-  WebGL1Renderer,
-  BoxGeometry,
-  MeshBasicMaterial,
-  Mesh,
-} from "three";
+import { Scene, WebGL1Renderer, MeshBasicMaterial, Mesh } from "three";
 import { PlaneGeometry } from "three";
 import { OrthographicCamera } from "three";
 
@@ -111,6 +104,7 @@ export default function HomePage() {
 
       <section className="relative mx-auto max-w-screen-lg">
         <canvas
+          // data-js-darken-top=""
           id="stripe-canvas"
           ref={canvas_1}
           style={{ height: "calc(50vh - 2.5*1.5rem)" }}
