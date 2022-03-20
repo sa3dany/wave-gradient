@@ -1,10 +1,7 @@
 import Head from "next/head";
 import { useEffect, useRef } from "react";
+import { StripeGradient } from "../lib/gradient";
 import { Gradient } from "../lib/vendor/gradient";
-
-import { Scene, WebGL1Renderer, MeshBasicMaterial, Mesh } from "three";
-import { PlaneGeometry } from "three";
-import { OrthographicCamera } from "three";
 
 const COLORS = ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"];
 
@@ -32,67 +29,17 @@ export default function HomePage() {
 
   // Setup three.js Gradients
   useEffect(() => {
-    const conf = {
-      density: [0.06 / 2, 0.16 / 2],
-    };
-
-    const renderNode = canvas_3.current;
-    const sizingNode = canvas_3.current.parentNode;
-
-    const { clientWidth: width, scrollHeight: height } = sizingNode;
-    const aspect = height / width;
-
-    const scene = new Scene();
-    const orthoCamera = new OrthographicCamera(
-      (aspect * width) / -0.88,
-      (aspect * width) / 0.88,
-      height / 2,
-      height / -2,
-      -2e3,
-      2e3
-    );
-
-    const renderer = new WebGL1Renderer({ canvas: renderNode });
-    renderer.setSize(width, height);
-
+    const gradient = new StripeGradient(canvas_3.current, { wireframe: true });
     const onResize = () => {
-      const sizingNode = canvas_3.current.parentNode;
-      const { clientWidth: width, scrollHeight: height } = sizingNode;
-      const aspect = height / width;
-      orthoCamera.left = (aspect * width) / -0.88;
-      orthoCamera.right = (aspect * width) / 0.88;
-      orthoCamera.top = height / 2;
-      orthoCamera.bottom = height / -2;
-      orthoCamera.updateProjectionMatrix();
-      renderer.setSize(width, height);
+      gradient.resize();
     };
+
+    gradient.play();
     window.addEventListener("resize", onResize);
-
-    const geometry = new PlaneGeometry(
-      width,
-      height,
-      width * conf.density[0],
-      height * conf.density[1]
-    );
-    const material = new MeshBasicMaterial({
-      color: 0xffffff,
-      wireframe: true,
-    });
-    const plane = new Mesh(geometry, material);
-    scene.add(plane);
-
-    function animate() {
-      const sizingNode = canvas_3.current.parentNode;
-      const { clientWidth: width, scrollHeight: height } = sizingNode;
-      requestAnimationFrame(animate);
-      renderer.render(scene, orthoCamera);
-    }
-
-    animate();
 
     return () => {
       window.removeEventListener("resize", onResize);
-      renderer.dispose(), geometry.dispose(), material.dispose();
+      gradient.dispose();
     };
   });
 
@@ -118,14 +65,11 @@ export default function HomePage() {
         />
       </section>
 
-      <section className="mx-auto mt-10 max-w-screen-lg">
-        <canvas
-          id="three-canvas"
-          ref={canvas_3}
-          style={{ height: "calc(50vh - 2.5*1.5rem)" }}
-          className="w-full rounded-3xl"
-        />
-      </section>
+      <section
+        ref={canvas_3}
+        className="mx-auto mt-10 max-w-screen-lg rounded-3xl overflow-hidden"
+        style={{ height: "calc(50vh - 2.5*1.5rem)" }}
+      ></section>
     </main>
   );
 }
