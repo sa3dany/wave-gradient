@@ -36,7 +36,7 @@ like me.
 
 ## Credits
 
-- [Strip](https://strip.com)
+- [Stripe](https://stripe.com)
 - [Kevin
   Hufnagl](https://kevinhufnagl.com/how-to-stripe-website-gradient-effect/)
   for the de-minified code
