@@ -29,7 +29,10 @@ export default function HomePage() {
 
   // Setup three.js Gradients
   useEffect(() => {
-    const gradient = new StripeGradient(canvas_3.current, { wireframe: true });
+    const gradient = new StripeGradient(canvas_3.current, {
+      density: [0.06 / 2, 0.16 / 2],
+      wireframe: true,
+    });
     const onResize = () => {
       gradient.resize();
     };
