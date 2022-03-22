@@ -35,7 +35,7 @@ like me.
 
 - [x] Port code to three.js.
 - [x] Get the thee.js gradient working.
-- [ ] Make the gradient to behave exaclty the same as the stripe gradient
+- [x] Make the gradient to behave exaclty the same as the stripe gradient
 - [ ] Recreate the neccessary vertex and fragment shader from scratch
   (excluding the external noise & blend functions which I will keep
   and which are apropriatly attributed) so that I am not just coping
