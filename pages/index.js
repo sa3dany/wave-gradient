@@ -48,23 +48,19 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className="mx-5 mb-12">
+    <main className="mx-5 mb-24">
       <Head>
         <title>3D Animated Gradients</title>
       </Head>
 
       <header className="mx-auto max-w-screen-lg font-bold leading-none tracking-wider sm:tracking-widest">
-        <h1 className="max-w-fit rounded-b-3xl bg-gray-900 px-6 pt-12 pb-6 font-display text-3xl uppercase text-white sm:text-5xl">
+        <h1 className="max-w-fit select-none rounded-b-3xl bg-gray-900 px-6 pt-12 pb-6 font-display text-3xl uppercase text-white sm:text-5xl">
           3D Animated Gradients
         </h1>
       </header>
 
       <section className="relative mx-auto max-w-screen-lg">
-        <header className="absolute top-6 left-6 z-10 font-bold">
-          <h2 className="text-xl text-white opacity-75 sm:text-3xl">
-            Stripe&apos;s Implementation
-          </h2>
-        </header>
+        <CanvasHeader>stripe&apos;s Implementation</CanvasHeader>
         <div
           className="relative mx-auto mt-6 h-64 max-w-screen-lg overflow-clip rounded-3xl"
           onClick={() => {
@@ -88,16 +84,20 @@ export default function HomePage() {
       </section>
 
       <section className="relative mx-auto max-w-screen-lg">
-        <header className="absolute top-6 left-6 z-10 font-bold">
-          <h2 className="text-xl text-white opacity-75 sm:text-3xl">
-            Three.js Implementation
-          </h2>
-        </header>
+        <CanvasHeader>three.js Implementation</CanvasHeader>
         <div
           ref={canvas_3}
           className="relative mx-auto mt-6 h-64 max-w-screen-lg overflow-clip rounded-3xl"
         ></div>
       </section>
     </main>
+  );
+}
+
+function CanvasHeader({ children }) {
+  return (
+    <header className="absolute top-6 left-6 z-10 font-bold mix-blend-soft-light">
+      <h2 className="select-none text-xl text-black md:text-3xl">{children}</h2>
+    </header>
   );
 }
