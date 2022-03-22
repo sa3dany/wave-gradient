@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StripeGradient } from "../lib/gradient";
 import { Gradient } from "../lib/vendor/gradient";
 
@@ -8,6 +8,7 @@ const COLORS = ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"];
 export default function HomePage() {
   const [canvas_1, canvas_2] = [useRef(), useRef()];
   const canvas_3 = useRef();
+  const [wireframeOn, setWireframeOn] = useState(true);
 
   // Setup Stripe gradienats
   useEffect(() => {
@@ -25,7 +26,7 @@ export default function HomePage() {
       gradient_1.disconnect();
       gradient_2.disconnect();
     };
-  });
+  }, [canvas_1, canvas_2]);
 
   // Setup three.js Gradients
   useEffect(() => {
@@ -44,7 +45,7 @@ export default function HomePage() {
       window.removeEventListener("resize", onResize);
       gradient.dispose();
     };
-  });
+  }, []);
 
   return (
     <main className="mx-5 mt-10">
@@ -61,10 +62,15 @@ export default function HomePage() {
           className="w-full rounded-3xl"
         />
         <canvas
+          onClick={() => {
+            setWireframeOn(!wireframeOn);
+          }}
           id="stripe-canvas-wireframe"
           ref={canvas_2}
           style={{ height: "calc(50vh - 2.5*1.5rem)" }}
-          className="w-full rounded-3xl absolute top-0 opacity-5"
+          className={`w-full rounded-3xl absolute top-0 ${
+            wireframeOn ? "opacity-5" : "opacity-0"
+          }`}
         />
       </section>
 
