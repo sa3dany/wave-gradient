@@ -48,37 +48,56 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className="mx-5 mt-10">
+    <main className="mx-5 mb-12">
       <Head>
-        <title>3D Plane Gradients</title>
+        <title>3D Animated Gradients</title>
       </Head>
 
+      <header className="mx-auto max-w-screen-lg font-bold leading-none tracking-wider sm:tracking-widest">
+        <h1 className="max-w-fit rounded-b-3xl bg-gray-900 px-6 pt-12 pb-6 font-display text-3xl uppercase text-white sm:text-5xl">
+          3D Animated Gradients
+        </h1>
+      </header>
+
       <section className="relative mx-auto max-w-screen-lg">
-        <canvas
-          // data-js-darken-top=""
-          id="stripe-canvas"
-          ref={canvas_1}
-          style={{ height: "calc(50vh - 2.5*1.5rem)" }}
-          className="w-full rounded-3xl"
-        />
-        <canvas
+        <header className="absolute top-6 left-6 z-10 font-bold">
+          <h2 className="text-xl text-white opacity-80 sm:text-3xl">
+            Stripe&apos;s Implementation
+          </h2>
+        </header>
+        <div
+          className="relative mx-auto mt-6 h-64 max-w-screen-lg overflow-clip rounded-3xl"
           onClick={() => {
             setWireframeOn(!wireframeOn);
           }}
-          id="stripe-canvas-wireframe"
-          ref={canvas_2}
-          style={{ height: "calc(50vh - 2.5*1.5rem)" }}
-          className={`w-full rounded-3xl absolute top-0 ${
-            wireframeOn ? "opacity-5" : "opacity-0"
-          }`}
-        />
+        >
+          <canvas
+            id="stripe-canvas"
+            ref={canvas_1}
+            className="block h-full w-full"
+          />
+          <canvas
+            data-js-darken-top=""
+            id="stripe-canvas-wireframe"
+            ref={canvas_2}
+            className={`absolute inset-0 h-full w-full opacity-5 ${
+              wireframeOn ? "" : "hidden"
+            }`}
+          />
+        </div>
       </section>
 
-      <section
-        ref={canvas_3}
-        className="mx-auto mt-10 max-w-screen-lg rounded-3xl overflow-hidden"
-        style={{ height: "calc(50vh - 2.5*1.5rem)" }}
-      ></section>
+      <section className="relative mx-auto max-w-screen-lg">
+        <header className="absolute top-6 left-6 z-10 font-bold">
+          <h2 className="text-xl text-white opacity-80 sm:text-3xl">
+            Three.js Implementation
+          </h2>
+        </header>
+        <div
+          ref={canvas_3}
+          className="relative mx-auto mt-6 h-64 max-w-screen-lg overflow-clip rounded-3xl"
+        ></div>
+      </section>
     </main>
   );
 }
