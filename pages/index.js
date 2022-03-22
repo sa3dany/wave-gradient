@@ -32,7 +32,7 @@ export default function HomePage() {
   useEffect(() => {
     const gradient = new StripeGradient(canvas_3.current, {
       density: [0.06 / 2, 0.16 / 2],
-      wireframe: true,
+      wireframe: false,
     });
     const onResize = () => {
       gradient.resize();
@@ -61,7 +61,7 @@ export default function HomePage() {
 
       <section className="relative mx-auto max-w-screen-lg">
         <header className="absolute top-6 left-6 z-10 font-bold">
-          <h2 className="text-xl text-white opacity-80 sm:text-3xl">
+          <h2 className="text-xl text-white opacity-75 sm:text-3xl">
             Stripe&apos;s Implementation
           </h2>
         </header>
@@ -89,7 +89,7 @@ export default function HomePage() {
 
       <section className="relative mx-auto max-w-screen-lg">
         <header className="absolute top-6 left-6 z-10 font-bold">
-          <h2 className="text-xl text-white opacity-80 sm:text-3xl">
+          <h2 className="text-xl text-white opacity-75 sm:text-3xl">
             Three.js Implementation
           </h2>
         </header>
