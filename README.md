@@ -17,8 +17,7 @@ camera](https://en.wikipedia.org/wiki/Orthographic_projection), a plane
 mesh and
 [two](https://github.com/sa3dany/stripe-gradients/blob/main/lib/vendor/shaders/vertex.js)
 [kinds](https://github.com/sa3dany/stripe-gradients/blob/main/lib/vendor/shaders/fragment.js)
-[of](https://github.com/sa3dany/stripe-gradients/blob/main/lib/vendor/shaders/noise.js)
-[GLSL
+of [GLSL
 shaders](https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_on_the_web/GLSL_Shaders).
 
 ## What is this repo about?
@@ -33,6 +32,17 @@ library. The reason I choose three.js as a starting point is because it
 abstracts away a lot of the details of the underlying openGL code and
 will make this project easier to implement for a beginner in 3D graphics
 like me.
+
+- [x] Port code to three.js.
+- [x] Get the thee.js gradient working.
+- [ ] Make the gradient to behave exaclty the same as the stripe gradient
+- [ ] Recreate the neccessary vertex and fragment shader from scratch
+  (excluding the external noise & blend functions which I will keep
+  and which are apropriatly attributed) so that I am not just coping
+  stripe's code.
+- [ ] Add control to add/edit colors, config, etc. for the gradient
+  instance.
+- [ ] Compare bundle size with the original stripe gradient.
 
 ## Credits
 
