@@ -39,6 +39,7 @@ export default function HomePage() {
       gradient.resize();
     };
 
+    gradient.time = 1253106;
     gradient.play();
     window.addEventListener("resize", onResize);
 
