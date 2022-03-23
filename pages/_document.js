@@ -11,7 +11,11 @@ export default function Document() {
           crossOrigin=""
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=PT+Sans:wght@400;700&display=swap&text=3DANIMATEDGRADIENTStripe'sImplementationThree.js"
+          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap&text=3DANIMATEDGRADIENTS"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap"
           rel="stylesheet"
         />
       </Head>
