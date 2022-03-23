@@ -9,12 +9,14 @@ const GRADIENT_COLORS = ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"];
 
 export default function HomePage() {
   const [stripeContainer, threeContainer] = [useRef(), useRef()];
+  const [three, setThree] = useState({});
   const [wireframe, setWireframe] = useState(false);
+  const [time, setTime] = useState(Math.random() * 1000 * 60 * 60);
 
   // Stripe gradient init
   useEffect(() => {
     const gradient = new Gradient({ wireframe });
-
+    gradient.t = time;
     gradient.initGradient("#stripe-canvas");
     GRADIENT_COLORS.forEach((hex, i) => {
       stripeContainer.current.style.setProperty(
@@ -22,11 +24,10 @@ export default function HomePage() {
         hex
       );
     });
-
     return () => {
       gradient.disconnect();
     };
-  }, [stripeContainer, wireframe]);
+  }, [stripeContainer, wireframe, time]);
 
   // three.js gradient init
   useEffect(() => {
@@ -38,16 +39,20 @@ export default function HomePage() {
     const onResize = () => {
       gradient.resize();
     };
-
-    gradient.time = 1253106;
+    gradient.time = time;
     gradient.play();
     window.addEventListener("resize", onResize);
-
+    setThree(gradient);
     return () => {
       window.removeEventListener("resize", onResize);
       gradient.dispose();
     };
-  }, [threeContainer, wireframe]);
+  }, [threeContainer, wireframe, time]);
+
+  const onToggleWireframe = () => {
+    setWireframe(!wireframe);
+    setTime(three.time);
+  };
 
   return (
     <main className="mx-auto max-w-screen-lg px-5 pb-24">
@@ -72,7 +77,7 @@ export default function HomePage() {
           </Switch.Label>
           <Switch
             checked={wireframe}
-            onChange={setWireframe}
+            onChange={onToggleWireframe}
             className={`${
               wireframe ? "bg-red-600" : "bg-black dark:bg-white"
             } relative inline-flex h-6 w-11 items-center rounded-full`}
