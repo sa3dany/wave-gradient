@@ -1,6 +1,7 @@
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
 import { Switch } from "@headlessui/react";
+import { useEffect, useRef, useState } from "react";
+
 import { StripeGradient } from "../lib/gradient";
 import { Gradient } from "../lib/vendor/gradient";
 
@@ -10,21 +11,24 @@ export default function HomePage() {
   const [stripeContainer, threeContainer] = [useRef(), useRef()];
   const [wireframe, setWireframe] = useState(false);
 
-  // Setup Stripe gradienats
+  // Stripe gradient init
   useEffect(() => {
-    const gradient = new Gradient({ wireframe }).initGradient("#stripe-canvas");
+    const gradient = new Gradient({ wireframe });
+
+    gradient.initGradient("#stripe-canvas");
     GRADIENT_COLORS.forEach((hex, i) => {
       stripeContainer.current.style.setProperty(
         `--gradient-color-${i + 1}`,
         hex
       );
     });
+
     return () => {
       gradient.disconnect();
     };
   }, [stripeContainer, wireframe]);
 
-  // Setup three.js Gradients
+  // three.js gradient init
   useEffect(() => {
     const gradient = new StripeGradient(threeContainer.current, {
       conlors: GRADIENT_COLORS,
@@ -46,15 +50,12 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto max-w-screen-lg px-5 pb-24">
-      <Head>
-        <title>3D Animated Gradients</title>
-      </Head>
-
-      <header className="font-bold leading-none tracking-wider sm:tracking-widest">
-        <h1 className="max-w-fit select-none rounded-b-3xl bg-gray-900 px-6 pt-12 pb-6 font-display text-3xl uppercase text-white dark:bg-gray-50 dark:text-black sm:text-5xl">
-          3D Animated Gradients
-        </h1>
-      </header>
+      <PageHeader>
+        3D Animated Gradients
+        <Head>
+          <title>3D Animated Gradients</title>
+        </Head>
+      </PageHeader>
 
       <section className="mt-6 max-w-fit rounded-3xl border-4 border-gray-900 p-6 dark:border-white">
         <Switch.Group className="flex select-none space-x-3" as="div">
@@ -87,7 +88,7 @@ export default function HomePage() {
 
       <section className="relative mt-6">
         <CanvasHeader>stripe&apos;s Implementation</CanvasHeader>
-        <div className="mx-auto h-64 overflow-clip rounded-3xl border-4 border-black dark:border-white">
+        <div className="h-64 overflow-clip rounded-3xl border-4 border-black dark:border-white">
           <canvas
             id="stripe-canvas"
             ref={stripeContainer}
@@ -103,6 +104,20 @@ export default function HomePage() {
         </div>
       </section>
     </main>
+  );
+}
+
+function PageHeader({ children }) {
+  return (
+    <header className="font-bold leading-none tracking-wider sm:tracking-widest">
+      <h1
+        className="max-w-fit select-none rounded-b-3xl bg-gray-900 px-6 pt-12
+                   pb-6 font-display text-3xl uppercase text-white dark:bg-gray-50
+                   dark:text-black sm:text-5xl"
+      >
+        {children}
+      </h1>
+    </header>
   );
 }
 
