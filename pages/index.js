@@ -32,7 +32,7 @@ export default function HomePage() {
   useEffect(() => {
     const gradient = new StripeGradient(threeContainer.current, {
       conlors: GRADIENT_COLORS,
-      density: [0.06 / 2, 0.16 / 2],
+      density: [0.06, 0.16],
       wireframe,
     });
     const onResize = () => {
