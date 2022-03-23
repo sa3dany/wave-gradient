@@ -48,13 +48,13 @@ export default function HomePage() {
   }, []);
 
   return (
-    <main className="mx-5 mb-24">
+    <main className="mx-auto max-w-screen-lg px-5 pb-24">
       <Head>
         <title>3D Animated Gradients</title>
       </Head>
 
-      <header className="mx-auto max-w-screen-lg font-bold leading-none tracking-wider sm:tracking-widest">
-        <h1 className="max-w-fit select-none rounded-b-3xl bg-gray-900 px-6 pt-12 pb-6 font-display text-3xl uppercase text-white sm:text-5xl">
+      <header className="font-bold leading-none tracking-wider sm:tracking-widest">
+        <h1 className="max-w-fit select-none rounded-b-3xl bg-gray-900 px-6 pt-12 pb-6 font-display text-3xl uppercase text-white dark:bg-gray-50 dark:text-black sm:text-5xl">
           3D Animated Gradients
         </h1>
       </header>
@@ -96,8 +96,8 @@ export default function HomePage() {
 
 function CanvasHeader({ children }) {
   return (
-    <header className="absolute top-6 left-6 z-10 font-bold mix-blend-soft-light">
-      <h2 className="select-none text-xl text-black md:text-3xl">{children}</h2>
+    <header className="absolute top-6 left-6 z-10 font-bold mix-blend-exclusion">
+      <h2 className="select-none text-xl text-white md:text-3xl">{children}</h2>
     </header>
   );
 }
