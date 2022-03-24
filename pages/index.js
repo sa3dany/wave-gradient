@@ -55,7 +55,7 @@ export default function HomePage() {
   };
 
   return (
-    <main className="mx-auto max-w-screen-lg px-5 pb-24">
+    <main className="mx-auto mb-6 max-w-screen-lg px-5">
       <PageHeader>
         3D Animated Gradients
         <Head>
@@ -94,7 +94,7 @@ export default function HomePage() {
 
       <section className="relative mt-6">
         <CanvasHeader>stripe&apos;s Implementation</CanvasHeader>
-        <div className="h-64 overflow-clip rounded-3xl border-4 border-black dark:border-white">
+        <div className="h-64 overflow-clip rounded-3xl border-4 border-black dark:border-white md:h-80">
           <canvas
             id="stripe-canvas"
             ref={stripeContainer}
@@ -105,7 +105,7 @@ export default function HomePage() {
 
       <section className="relative mt-6">
         <CanvasHeader>three.js Implementation</CanvasHeader>
-        <div className="h-64 overflow-clip rounded-3xl border-4 border-black dark:border-white">
+        <div className="h-64 overflow-clip rounded-3xl border-4 border-black dark:border-white md:h-80">
           <canvas ref={threeContainer} />
         </div>
       </section>
@@ -116,11 +116,7 @@ export default function HomePage() {
 function PageHeader({ children }) {
   return (
     <header className="font-bold leading-none tracking-wider sm:tracking-widest">
-      <h1
-        className="max-w-fit select-none rounded-b-3xl bg-gray-900 px-6 pt-12
-                   pb-6 font-display text-3xl uppercase text-white dark:bg-gray-50
-                   dark:text-black sm:text-5xl"
-      >
+      <h1 className="max-w-fit select-none rounded-b-3xl bg-gray-900 px-6 py-6 font-display text-3xl uppercase text-white dark:bg-gray-50 dark:text-black sm:text-5xl">
         {children}
       </h1>
     </header>
