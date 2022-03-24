@@ -1,9 +1,5 @@
-import snoise from "./common/snoise";
-import blendNormal from "./common/blend";
-
-const shader = `
-${blendNormal}
-${snoise}
+@import ../../node_modules/glsl-blend/normal;
+@import ../../node_modules/glsl-noise/simplex/3d;
 
 varying vec3 v_color;
 
@@ -83,6 +79,4 @@ void main() {
   //
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-}`;
-
-export default shader;
+}

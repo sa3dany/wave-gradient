@@ -1,9 +1,5 @@
-import snoise from "../../shader/common/snoise";
-import blendNormal from "../../shader/common/blend";
-
-const shader = `
-${blendNormal}
-${snoise}
+@import ../../../node_modules/glsl-blend/normal;
+@import ../../../node_modules/glsl-noise/simplex/3d;
 
 varying vec3 v_color;
 
@@ -20,9 +16,8 @@ void main() {
 
   // Front-to-back tilt
   float tilt = 0.0;
-  if (u_tilt == 1.) {
-    tilt = resolution.y / 2.0 * uvNorm.y;
-  }
+  tilt = resolution.y / 2.0 * uvNorm.y;
+
 
   // Left-to-right angle
   float incline = resolution.x * uvNorm.x / 2.0 * u_vertDeform.incline;
@@ -83,6 +78,4 @@ void main() {
   //
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-}`;
-
-export default shader;
+}

@@ -1,4 +1,3 @@
-const shader = `
 varying vec3 v_color;
 
 void main() {
@@ -8,6 +7,4 @@ void main() {
     color.g -= pow(st.y + sin(-12.0) * st.x, u_shadow_power) * 0.4;
   }
   gl_FragColor = vec4(color, 1.0);
-}`;
-
-export default shader;
+}
