@@ -32,7 +32,7 @@ export default function HomePage() {
   // three.js gradient init
   useEffect(() => {
     const gradient = new StripeGradient(threeContainer.current, {
-      conlors: GRADIENT_COLORS,
+      colors: GRADIENT_COLORS,
       density: [0.06, 0.16],
       wireframe,
     });
