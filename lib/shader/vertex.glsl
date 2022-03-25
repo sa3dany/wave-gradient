@@ -1,5 +1,5 @@
-@import ../../node_modules/glsl-blend/normal;
-@import ../../node_modules/glsl-noise/simplex/3d;
+#pragma glslify: blendNormal = require("glsl-blend/normal")
+#pragma glslify: snoise = require("glsl-noise/simplex/3d")
 
 varying vec3 v_color;
 

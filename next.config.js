@@ -1,16 +1,17 @@
 /** @type {import('next').NextConfig} */
 
-const nextConfig = {
-  reactStrictMode: true,
-};
+const path = require("path");
 
 module.exports = {
-  ...nextConfig,
+  reactStrictMode: true,
+
   webpack: (config) => {
     config.module.rules.push({
       test: /\.glsl$/,
-      use: "webpack-glsl-loader",
+      type: "asset/source",
+      use: [{ loader: path.resolve("lib/glsl-loader.js") }],
     });
+
     return config;
   },
 };
