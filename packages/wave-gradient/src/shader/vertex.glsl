@@ -8,27 +8,9 @@ void main() {
 
   vec2 noiseCoord = resolution * uvNorm * u_global.noiseFreq;
 
-  vec2 st = 1. - uvNorm.xy;
-
-  //
-  // Tilting the plane
-  //
-
-  // Front-to-back tilt
-  float tilt = 0.0;
-  if (u_tilt == 1.) {
-    tilt = resolution.y / 2.0 * uvNorm.y;
-  }
-
-  // Left-to-right angle
-  float incline = resolution.x * uvNorm.x / 2.0 * u_vertDeform.incline;
-
-  // Up-down shift to offset incline
-  float offset = resolution.x / 2.0 * u_vertDeform.incline * mix(u_vertDeform.offsetBottom, u_vertDeform.offsetTop, uv.y);
-
-  //
+  // -------------------------------------------------------------------
   // Vertex noise
-  //
+  // -------------------------------------------------------------------
 
   float noise = snoise(vec3(
     noiseCoord.x * u_vertDeform.noiseFreq.x + time * u_vertDeform.noiseFlow,
@@ -44,13 +26,13 @@ void main() {
 
   vec3 pos = vec3(
     position.x,
-    position.y + tilt + incline + noise - offset,
+    position.y + noise,
     position.z
   );
 
-  //
+  // -------------------------------------------------------------------
   // Vertex color, to be passed to fragment shader
-  //
+  // -------------------------------------------------------------------
 
   if (u_active_colors[0] == 1.) {
     v_color = u_baseColor;
@@ -73,10 +55,6 @@ void main() {
       v_color = blendNormal(v_color, layer.color, pow(noise, 4.));
     }
   }
-
-  //
-  // Finish
-  //
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
 }

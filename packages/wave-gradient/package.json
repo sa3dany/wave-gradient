@@ -1,0 +1,27 @@
+{
+  "name": "wave-gradient",
+  "version": "0.0.0",
+  "main": "dist/wave-gradient.cjs.js",
+  "module": "dist/wave-gradient.esm.js",
+  "browser": "dist/wave-gradient.umd.js",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c --environment NODE_ENV:production",
+    "dev": "rollup -c -w"
+  },
+  "dependencies": {
+    "three": "^0.139.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^21.0.2",
+    "@rollup/plugin-node-resolve": "^13.1.3",
+    "glsl-blend": "^1.0.3",
+    "glsl-noise": "^0.0.0",
+    "glslify": "^7.1.1",
+    "rollup": "^2.70.1",
+    "rollup-plugin-terser": "^7.0.2"
+  }
+}

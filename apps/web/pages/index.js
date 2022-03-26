@@ -2,8 +2,7 @@ import Head from "next/head";
 import { Switch } from "@headlessui/react";
 import { useEffect, useRef, useState } from "react";
 
-import { StripeGradient } from "../lib/gradient";
-import { Gradient } from "../lib/stripe/gradient";
+import { StripeGradient, WaveGradient } from "wave-gradient";
 
 const GRADIENT_COLORS = ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"];
 
@@ -15,7 +14,7 @@ export default function HomePage() {
 
   // Stripe gradient init
   useEffect(() => {
-    const gradient = new Gradient({ wireframe });
+    const gradient = new StripeGradient({ wireframe });
     gradient.t = time;
     gradient.initGradient("#stripe-canvas");
     GRADIENT_COLORS.forEach((hex, i) => {
@@ -31,7 +30,7 @@ export default function HomePage() {
 
   // three.js gradient init
   useEffect(() => {
-    const gradient = new StripeGradient(threeContainer.current, {
+    const gradient = new WaveGradient(threeContainer.current, {
       colors: GRADIENT_COLORS,
       density: [0.06, 0.16],
       wireframe,

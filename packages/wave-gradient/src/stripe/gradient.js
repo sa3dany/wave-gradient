@@ -1,7 +1,7 @@
 import { MiniGl } from "./minigl";
 
-import vertexShader from "./shaders/vertex.glsl";
-import fragmentShader from "./shaders/fragment.glsl";
+import vertexShader from "./vertex.glsl";
+import fragmentShader from "./fragment.glsl";
 
 function normalizeColor(hexCode) {
   return [
@@ -11,7 +11,7 @@ function normalizeColor(hexCode) {
   ];
 }
 
-export class Gradient {
+export default class StripeGradient {
   constructor({ wireframe = false } = {}) {
     this.conf = {
       density: [0.06, 0.16],

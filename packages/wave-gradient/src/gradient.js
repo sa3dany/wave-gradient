@@ -25,10 +25,9 @@ import fragmentShader from "./shader/fragment.glsl";
  */
 const DEFAULTS = {
   amplitude: 320,
-  angle: 0,
   colors: [0xef008f, 0x6ec3f4, 0x7038ff, 0xffba27],
   density: [0.06, 0.16],
-  frequency: [14e-5, 29e-5],
+  frequency: [0.00014, 0.00029],
   seed: 5,
   wireframe: false,
 };
@@ -104,11 +103,11 @@ function setGeometry(width, height, density) {
 
   const nVertices = (wSegments + 1) * (hSegments + 1);
   const uvNorm = new Float32Array(2 * nVertices);
-  for (const y = 0; y <= hSegments; y++) {
-    for (const x = 0; x <= wSegments; x++) {
-      const vertix = y * (wSegments + 1) + x;
-      uvNorm[2 * vertix] = (x / wSegments) * 2 - 1;
-      uvNorm[2 * vertix + 1] = 1 - (y / hSegments) * 2;
+  for (let y = 0; y <= hSegments; y++) {
+    for (let x = 0; x <= wSegments; x++) {
+      const vertex = y * (wSegments + 1) + x;
+      uvNorm[2 * vertex] = (x / wSegments) * 2 - 1;
+      uvNorm[2 * vertex + 1] = 1 - (y / hSegments) * 2;
     }
   }
 
@@ -144,7 +143,7 @@ function setMaterial(options = {}) {
  * Animates the gradient by adjusting the time value sent to the vertex
  * shader.
  * @param {DOMHighResTimeStamp} now
- * @this {StripeGradient}
+ * @this {WaveGradient}
  * @returns {void}
  */
 function animate(now) {
@@ -164,7 +163,7 @@ function animate(now) {
 /**
  * Renders the three.js scene. Must be either bound to an instance
  * before calling, or call using Function.prototype.call().
- * @this {StripeGradient}
+ * @this {WaveGradient}
  * @returns {void}
  */
 function render() {
@@ -174,7 +173,7 @@ function render() {
 /**
  * Class that recreates the https://stripe.com animated gradient.
  */
-export class StripeGradient {
+export default class WaveGradient {
   /**
    * Create a gradient instance. The element can be canvas HTML element
    * or a css query, in which case the first matching element will be
@@ -195,7 +194,6 @@ export class StripeGradient {
 
     /** @private */
     this.uniforms = {
-      u_tilt: { value: 0 },
       resolution: { value: new Float32Array([clientWidth, scrollHeight]) },
       u_time: { value: 0 },
       u_shadow_power: { value: 5 },
@@ -204,14 +202,11 @@ export class StripeGradient {
       u_global: {
         value: {
           noiseFreq: new Float32Array(this.config.frequency),
-          noiseSpeed: 5e-6,
+          noiseSpeed: 0.000005,
         },
       },
       u_vertDeform: {
         value: {
-          incline: Math.sin(this.config.angle) / Math.cos(this.config.angle),
-          offsetTop: -0.5,
-          offsetBottom: -0.5,
           noiseFreq: new Float32Array([3, 4]),
           noiseAmp: this.config.amplitude,
           noiseSpeed: 10,
@@ -278,7 +273,7 @@ export class StripeGradient {
 
   /**
    * Start animating the gradient.
-   * @returns {StripeGradient} self for chaining
+   * @returns {WaveGradient} self for chaining
    */
   play() {
     if (!this.state.playing) {
@@ -291,7 +286,7 @@ export class StripeGradient {
   /**
    * Should be called if the contaning DOM node changes size to update
    * the canvas, camera & geometry to the new size.
-   * @returns {StripeGradient} self for chaining
+   * @returns {WaveGradient} self for chaining
    */
   resize() {
     const { clientWidth, scrollHeight } = this.container;
@@ -316,7 +311,7 @@ export class StripeGradient {
 
   /**
    * Cleanup any three.js resources, DOM nodes used by the gradient.
-   * @returns {StripeGradient} self for chaining
+   * @returns {WaveGradient} self for chaining
    */
   dispose() {
     this.scene.clear();
