@@ -1,7 +1,7 @@
 # Learning about the stripe landing page animated gradients
 
 ![An image showing a static
-gradient](https://raw.githubusercontent.com/sa3dany/stripe-gradients/main/public/github-readme-hero.webp)
+gradient](https://raw.githubusercontent.com/sa3dany/stripe-gradients/main/art/readme-hero.jpg)
 
 I really liked the effect of the animated gradients on the
 [stripe.com](https://stripe.com) home page and was curious of how it was
