@@ -1,5 +1,5 @@
 {
-  "name": "wave-gradient",
+  "name": "wave-gradients",
   "version": "0.0.0",
   "main": "dist/wave-gradient.cjs.js",
   "module": "dist/wave-gradient.esm.js",

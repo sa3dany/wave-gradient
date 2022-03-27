@@ -17,7 +17,6 @@ export default (async () => [
     plugins: [
       glslLoader(),
       resolve(), // so Rollup can find `ms`
-      commonjs(), // so Rollup can convert `ms` to an ES module
       isProduction && (await import("rollup-plugin-terser")).terser(),
     ],
   },

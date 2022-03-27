@@ -2,7 +2,7 @@ import Head from "next/head";
 import { Switch } from "@headlessui/react";
 import { useEffect, useRef, useState } from "react";
 
-import { StripeGradient, WaveGradient } from "wave-gradient";
+import { StripeGradient, WaveGradient } from "wave-gradients";
 
 const GRADIENT_COLORS = ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"];
 
