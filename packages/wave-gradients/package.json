@@ -8,6 +8,11 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sa3dany/wave-gradients.git",
+    "directory": "packages/wave-gradients"
+  },
   "scripts": {
     "build": "rollup -c --environment NODE_ENV:production",
     "dev": "rollup -c -w"
