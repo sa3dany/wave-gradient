@@ -147,12 +147,12 @@ function setMaterial(options = {}) {
  * @returns {void}
  */
 function animate(now) {
-  const shouldSkipFrame = now - this.state.lastFrameTime < 1000 / 24;
+  const frameTime = 1000 / 24; // 24 FPS
+  const shouldSkipFrame = now - this.state.lastFrameTime < frameTime;
 
   if (!shouldSkipFrame) {
+    this.time += Math.min(now - this.state.lastFrameTime, frameTime);
     this.state.lastFrameTime = now;
-    this.time += Math.min(now - this.lastTime, 1e3 / 15);
-    this.lastTime = now;
     this.uniforms["u_time"].value = this.time;
     render.call(this);
   }
@@ -257,16 +257,14 @@ export default class WaveGradient {
     this.renderer.setSize(clientWidth, scrollHeight);
     this.renderer.setClearAlpha(0);
 
-    this.time = 0;
-
-    /** @private */
-    this.lastTime = 0;
-
     /** @private */
     this.state = {
       playing: false,
       lastFrameTime: -Infinity,
     };
+
+    /** @public */
+    this.time = 0;
   }
 
   /**
