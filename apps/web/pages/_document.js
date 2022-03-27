@@ -11,7 +11,7 @@ export default function Document() {
           crossOrigin=""
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap&text=wavegradients"
+          href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap&text=WAVEGRADIENTS"
           rel="stylesheet"
         />
         <link
