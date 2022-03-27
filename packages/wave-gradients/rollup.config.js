@@ -1,5 +1,4 @@
 import resolve from "@rollup/plugin-node-resolve";
-import commonjs from "@rollup/plugin-commonjs";
 import glslLoader from "./rollup-plugin-glslify";
 import pkg from "./package.json";
 
@@ -15,8 +14,8 @@ export default (async () => [
       format: "umd",
     },
     plugins: [
+      resolve(),
       glslLoader(),
-      resolve(), // so Rollup can find `ms`
       isProduction && (await import("rollup-plugin-terser")).terser(),
     ],
   },
