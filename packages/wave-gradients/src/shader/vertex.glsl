@@ -34,13 +34,10 @@ void main() {
   // Vertex color, to be passed to fragment shader
   // -------------------------------------------------------------------
 
-  if (u_active_colors[0] == 1.0) {
-    color = u_baseColor;
-  }
+  color = u_baseColor;
 
   for (int i = 0; i < u_waveLayers_length; i++) {
-    if (u_active_colors[i + 1] == 1.0) {
-      WaveLayers layer = u_waveLayers[i];
+    WaveLayers layer = u_waveLayers[i];
 
       float noise = smoothstep(
         layer.noiseFloor,
@@ -52,8 +49,7 @@ void main() {
         )) / 2.0 + 0.5
       );
 
-      color = blendNormal(color, layer.color, pow(noise, 4.0));
-    }
+    color = blendNormal(color, layer.color, pow(noise, 4.0));
   }
 
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);

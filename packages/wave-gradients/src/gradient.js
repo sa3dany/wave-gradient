@@ -196,7 +196,6 @@ export default class WaveGradient {
     this.uniforms = {
       resolution: { value: new Float32Array([clientWidth, scrollHeight]) },
       u_time: { value: 0 },
-      u_active_colors: { value: new Float32Array([1, 1, 1, 1]) },
       u_global: {
         value: {
           noiseFreq: new Float32Array(this.config.frequency),
