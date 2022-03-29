@@ -49,3 +49,5 @@ like me.
 - [Kevin
   Hufnagl](https://kevinhufnagl.com/how-to-stripe-website-gradient-effect/)
   for the de-minified code
+- Ashima Arts and Stefan Gustavson for the [Simplex noise functions](https://github.com/stegu/webgl-noise)
+- Jamie Owen for the GLSL shader [color blending function](https://github.com/jamieowen/glsl-blend)
