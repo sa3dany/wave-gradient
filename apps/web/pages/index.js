@@ -12,6 +12,12 @@ export default function HomePage() {
   const [wireframe, setWireframe] = useState(false);
   const [time, setTime] = useState(Math.random() * 1000 * 60 * 60);
 
+  // Get rid of the three.js warning about multiple instances when
+  // developing
+  useEffect(() => {
+    delete window.__THREE__;
+  });
+
   // Stripe gradient init
   useEffect(() => {
     const gradient = new StripeGradient({ wireframe });
