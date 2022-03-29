@@ -1,22 +1,26 @@
 #pragma glslify: blendNormal = require("glsl-blend/normal")
-#pragma glslify: snoise = require("glsl-noise/simplex/3d")
+#pragma glslify: psrdnoise = require("glsl-psrdnoise/dist/3d")
 
 varying vec3 color;
 
 void main() {
   float time = u_time * u_global.noiseSpeed;
-
   vec2 noiseCoord = resolution * uvNorm * u_global.noiseFreq;
 
   // -------------------------------------------------------------------
   // Vertex noise
   // -------------------------------------------------------------------
 
-  float noise = snoise(vec3(
-    noiseCoord.x * u_vertDeform.noiseFreq.x + time * u_vertDeform.noiseFlow,
-    noiseCoord.y * u_vertDeform.noiseFreq.y,
-    time * u_vertDeform.noiseSpeed + u_vertDeform.noiseSeed
-  )) * u_vertDeform.noiseAmp;
+  vec3 g;
+  float noise = psrdnoise(
+    vec3(
+      noiseCoord.x * u_vertDeform.noiseFreq.x + time * u_vertDeform.noiseFlow,
+      noiseCoord.y * u_vertDeform.noiseFreq.y,
+      time * u_vertDeform.noiseSpeed + u_vertDeform.noiseSeed
+    ),
+    vec3(0.0),
+    0.0, g
+  ) * u_vertDeform.noiseAmp;
 
   // Fade noise to zero at edges
   noise *= 1.0 - pow(abs(uvNorm.y), 2.0);
@@ -42,11 +46,15 @@ void main() {
       float noise = smoothstep(
         layer.noiseFloor,
         layer.noiseCeil,
-        snoise(vec3(
-          noiseCoord.x * layer.noiseFreq.x + time * layer.noiseFlow,
-          noiseCoord.y * layer.noiseFreq.y,
-          time * layer.noiseSpeed + layer.noiseSeed
-        )) / 2.0 + 0.5
+        psrdnoise(
+          vec3(
+            noiseCoord.x * layer.noiseFreq.x + time * layer.noiseFlow,
+            noiseCoord.y * layer.noiseFreq.y,
+            time * layer.noiseSpeed + layer.noiseSeed
+          ),
+          vec3(0.0),
+          layer.noiseSpeed, g
+        ) / 2.0 + 0.5
       );
 
     color = blendNormal(color, layer.color, pow(noise, 4.0));
