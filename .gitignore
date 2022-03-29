@@ -9,6 +9,7 @@ packages/**/dist/**
 
 # misc
 .DS_Store
+/art/*.png
 
 # debug
 npm-debug.log*
