@@ -2,7 +2,7 @@
 node_modules
 
 # next.js
-apps/**/.next
+web/.next
 
 # production
 packages/**/dist/**
