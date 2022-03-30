@@ -5,14 +5,14 @@ varying vec3 color;
 
 void main() {
   float time = u_time * u_global.noiseSpeed;
-  vec2 noiseCoord = resolution * uvNorm * u_global.noiseFreq;
+  vec2 noiseCoord = resolution * uv * u_global.noiseFreq;
 
   // -------------------------------------------------------------------
   // Vertex noise
   // -------------------------------------------------------------------
 
   // Tilt the plane towards the camera
-  float tilt = resolution.y / 2.0 * uvNorm.y;
+  float tilt = resolution.y / 2.0 * uv.y;
 
   vec3 g;
   float noise = psrdnoise(
@@ -26,7 +26,7 @@ void main() {
   ) * u_vertDeform.noiseAmp;
 
   // Fade noise to zero at edges
-  noise *= 1.0 - pow(abs(uvNorm.y), 2.0);
+  noise *= 1.0 - pow(abs(uv.y), 2.0);
 
   // Clamp to 0
   noise = max(0.0, noise);

@@ -1,8 +1,8 @@
-/** @module srtipegradient */
+/** @module */
 
 import {
-  BufferAttribute,
   Color,
+  Float32BufferAttribute,
   Mesh,
   OrthographicCamera,
   PlaneGeometry,
@@ -97,27 +97,27 @@ function setCamera(camera, width, height, near = -1000, far = 1000) {
  * @returns {THREE.PlaneGeometry} three.js plane geometry
  */
 function setGeometry(width, height, density) {
-  const wSegments = Math.ceil(density[0] * width);
-  const hSegments = Math.ceil(density[1] * height);
-  const geometry = new PlaneGeometry(width, height, wSegments, hSegments);
+  const gridX = Math.ceil(density[0] * width);
+  const gridY = Math.ceil(density[1] * height);
+  const geometry = new PlaneGeometry(width, height, gridX, gridY);
 
   // Rotate to be flat across the z axis (to match strip's plane)
   geometry.rotateX(-90 * (Math.PI / 180));
 
-  const nVertices = (wSegments + 1) * (hSegments + 1);
-  const uvNorm = new Float32Array(2 * nVertices);
-  for (let y = 0; y <= hSegments; y++) {
-    for (let x = 0; x <= wSegments; x++) {
-      const vertex = y * (wSegments + 1) + x;
-      uvNorm[2 * vertex] = (x / wSegments) * 2 - 1;
-      uvNorm[2 * vertex + 1] = 1 - (y / hSegments) * 2;
+  // Three.js creates uvs scaled between [0,1]. Here we assign new uvs
+  // scaled between [-1,1]. This is used in the verte shader to fade the
+  // vertex deformation around the edge of the plane
+  const uvs = [];
+  for (let iy = 0; iy <= gridY; iy++) {
+    for (let ix = 0; ix <= gridX; ix++) {
+      uvs.push((ix / gridX) * 2 - 1);
+      uvs.push(1 - (iy / gridY) * 2);
     }
   }
 
-  const uvNormAttribute = new BufferAttribute(uvNorm, 2);
-  uvNormAttribute.name = "uvNorm";
-  uvNormAttribute.setUsage(StaticReadUsage);
-  geometry.setAttribute("uvNorm", uvNormAttribute);
+  const uvAttribute = new Float32BufferAttribute(uvs, 2);
+  uvAttribute.setUsage(StaticReadUsage);
+  geometry.setAttribute("uv", uvAttribute);
 
   return geometry;
 }
@@ -239,7 +239,7 @@ export default class WaveGradient {
 
     /** @private */
     this.material = setMaterial({
-      attributes: [this.geometry.getAttribute("uvNorm")],
+      attributes: [],
       uniforms: this.uniforms,
       wireframe: this.config.wireframe,
     });
