@@ -239,7 +239,6 @@ export default class WaveGradient {
 
     /** @private */
     this.material = setMaterial({
-      attributes: [],
       uniforms: this.uniforms,
       wireframe: this.config.wireframe,
     });

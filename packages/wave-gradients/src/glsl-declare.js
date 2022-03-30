@@ -93,34 +93,13 @@ uniform ${typeName} ${name};`;
 }
 
 /**
- * Returns the attribute declaration for the provided attribute based on
- * its item size.
- * @param {THREE.BufferAttribute[]} attribute
- * @returns {string} GLSL attribute declaration
- */
-function declareAttribute(attribute) {
-  if (attribute.itemSize > 4) {
-    throw new Error(`Unexpected attribute itemSize: ${attribute.itemSize}`);
-  }
-  return `attribute vec${attribute.itemSize} ${attribute.name};`;
-}
-
-/**
  * Generates the required variable and struct declarations inside GLSL
- * shader files based on the provided uniforms object or attributes
- * array.
- * @param {Object|THREE.BufferAttribute[]} variables
+ * shader files based on the provided uniforms object.
+ * @param {Object} uniforms
  * @returns {string}
  */
-export function getDeclarations(variables) {
-  if (
-    Array.isArray(variables) &&
-    variables.every((v) => v.isBufferAttribute === true)
-  ) {
-    return variables.map((attribute) => declareAttribute(attribute)).join("\n");
-  } else {
-    return Object.entries(variables)
-      .map(([name, data]) => declareUniform([name, data.value]))
-      .join("\n");
-  }
+export function getDeclarations(uniforms) {
+  return Object.entries(uniforms)
+    .map(([name, data]) => declareUniform([name, data.value]))
+    .join("\n");
 }
