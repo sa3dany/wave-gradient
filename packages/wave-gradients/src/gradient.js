@@ -101,6 +101,9 @@ function setGeometry(width, height, density) {
   const hSegments = Math.ceil(density[1] * height);
   const geometry = new PlaneGeometry(width, height, wSegments, hSegments);
 
+  // Rotate to be flat across the z axis (to match strip's plane)
+  geometry.rotateX(-90 * (Math.PI / 180));
+
   const nVertices = (wSegments + 1) * (hSegments + 1);
   const uvNorm = new Float32Array(2 * nVertices);
   for (let y = 0; y <= hSegments; y++) {

@@ -11,6 +11,9 @@ void main() {
   // Vertex noise
   // -------------------------------------------------------------------
 
+  // Tilt the plane towards the camera
+  float tilt = resolution.y / 2.0 * uvNorm.y;
+
   vec3 g;
   float noise = psrdnoise(
     vec3(
@@ -30,7 +33,7 @@ void main() {
 
   vec3 pos = vec3(
     position.x,
-    position.y + noise,
+    position.y + noise + tilt,
     position.z
   );
 
