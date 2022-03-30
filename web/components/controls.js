@@ -4,7 +4,7 @@ export default function Controls({ useWireframe }) {
   const [wireframe, onToggleWireframe] = useWireframe();
 
   return (
-    <section className="max-w-fit rounded-3xl border-4 border-gray-900 p-6 dark:border-white">
+    <section className="max-w-fit rounded-3xl border-4 border-gray-900 p-4 dark:border-white sm:p-6">
       <Switch.Group className="flex select-none space-x-3" as="div">
         <Switch.Label className="font-bold uppercase">
           <svg

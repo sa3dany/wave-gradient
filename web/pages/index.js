@@ -57,9 +57,9 @@ export default function HomePage() {
   }, [threeContainer, wireframe, time]);
 
   return (
-    <main className="mx-auto mb-6 max-w-screen-lg px-5">
-      <div className="flex items-end justify-between">
-        <PageHeader className="sm:flex-1">
+    <main className="mx-auto mb-6 px-5">
+      <div className="flex h-24 items-end justify-between">
+        <PageHeader className="flex-auto self-stretch">
           Wave Gradient
           <Head>
             <title>Wave Gradient</title>
@@ -79,7 +79,10 @@ export default function HomePage() {
 
       <section className="relative mt-6">
         <CanvasHeader>stripe&apos;s Implementation</CanvasHeader>
-        <div className="h-64 overflow-clip rounded-3xl border-4 border-black dark:border-white md:h-80">
+        <div
+          className="overflow-clip rounded-3xl border-4 border-black dark:border-white"
+          style={{ height: "calc(50vh - ((4.5rem + 6rem) / 2))" }}
+        >
           <canvas
             id="stripe-canvas"
             ref={stripeContainer}
@@ -90,7 +93,10 @@ export default function HomePage() {
 
       <section className="relative mt-6">
         <CanvasHeader>three.js Implementation</CanvasHeader>
-        <div className="h-64 overflow-clip rounded-3xl border-4 border-black dark:border-white md:h-80">
+        <div
+          className="overflow-clip rounded-3xl border-4 border-black dark:border-white"
+          style={{ height: "calc(50vh - ((4.5rem + 6rem) / 2))" }}
+        >
           <canvas ref={threeContainer} />
         </div>
       </section>
