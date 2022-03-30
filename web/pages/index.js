@@ -13,6 +13,7 @@ export default function HomePage() {
   const [three, setThree] = useState({});
   const [wireframe, setWireframe] = useState(false);
   const [time, setTime] = useState(Math.random() * 1000 * 60 * 60);
+  const [isPlaying, setIsPlaying] = useState(true);
 
   // Get rid of the three.js warning about multiple instances when
   // developing
@@ -47,7 +48,6 @@ export default function HomePage() {
       gradient.resize();
     };
     gradient.time = time;
-    gradient.play();
     window.addEventListener("resize", onResize);
     setThree(gradient);
     return () => {
@@ -56,9 +56,19 @@ export default function HomePage() {
     };
   }, [threeContainer, wireframe, time]);
 
+  useEffect(() => {
+    if (three.state) {
+      if (isPlaying) {
+        three.play();
+      } else {
+        three.state.playing = isPlaying;
+      }
+    }
+  }, [isPlaying, three]);
+
   return (
     <main className="mx-auto mb-6 px-5">
-      <div className="flex h-24 items-end justify-between">
+      <div className="items-end justify-between space-y-6 sm:flex sm:h-24 sm:space-y-0">
         <PageHeader className="flex-auto self-stretch">
           Wave Gradient
           <Head>
@@ -72,6 +82,12 @@ export default function HomePage() {
             () => {
               setWireframe(!wireframe);
               setTime(three.time);
+            },
+          ]}
+          usePlay={() => [
+            isPlaying,
+            () => {
+              setIsPlaying(!isPlaying);
             },
           ]}
         />
