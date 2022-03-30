@@ -17,6 +17,8 @@ mesh and
 of [GLSL
 shaders](https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_on_the_web/GLSL_Shaders).
 
+![3D plane rotating gif](https://user-images.githubusercontent.com/21214427/160907503-3cdd110c-ff48-4e2f-965c-d2c5bd173051.gif)
+
 ## What is this repo about?
 
 As a first step, I am working on recreating the gradient effect in
@@ -36,11 +38,11 @@ like me.
 - [x] Get the thee.js gradient working.
 - [x] Make the gradient to behave exaclty the same as the stripe gradient
 - [ ] Recreate the neccessary vertex and fragment shader from scratch
-  (excluding the external noise & blend functions which I will keep
-  and which are apropriatly attributed) so that I am not just coping
-  stripe's code.
+      (excluding the external noise & blend functions which I will keep
+      and which are apropriatly attributed) so that I am not just coping
+      stripe's code.
 - [ ] Add control to add/edit colors, config, etc. for the gradient
-  instance.
+      instance.
 - [ ] Compare bundle size with the original stripe gradient.
 
 ## Credits
