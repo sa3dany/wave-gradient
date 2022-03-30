@@ -15,7 +15,8 @@
   },
   "scripts": {
     "build": "rollup -c --environment NODE_ENV:production",
-    "dev": "rollup -c -w"
+    "dev": "rollup -c -w",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "dependencies": {
     "three": "^0.139.0"
