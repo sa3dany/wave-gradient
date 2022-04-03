@@ -133,11 +133,10 @@ function setGeometry(width, height, density) {
 function setMaterial(options = {}) {
   const wireframe = !!options.wireframe;
   const uniformDeclarations = getDeclarations(options.uniforms || {});
-  const attributeDeclarations = getDeclarations(options.attributes || []);
   return new ShaderMaterial({
     wireframe,
     uniforms: options.uniforms,
-    vertexShader: `${uniformDeclarations}\n${attributeDeclarations}\n${vertexShader}`,
+    vertexShader: `${uniformDeclarations}\n${vertexShader}`,
     fragmentShader: `${uniformDeclarations}\n${fragmentShader}`,
   });
 }
@@ -157,20 +156,10 @@ function animate(now) {
     this.time += Math.min(now - this.state.lastFrameTime, frameTime);
     this.state.lastFrameTime = now;
     this.uniforms["u_time"].value = this.time;
-    render.call(this);
+    this.renderer.render(this.scene, this.camera);
   }
 
   if (this.state.playing) requestAnimationFrame(animate.bind(this));
-}
-
-/**
- * Renders the three.js scene. Must be either bound to an instance
- * before calling, or call using Function.prototype.call().
- * @this {WaveGradient}
- * @returns {void}
- */
-function render() {
-  this.renderer.render(this.scene, this.camera);
 }
 
 /**
