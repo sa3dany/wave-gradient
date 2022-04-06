@@ -3,6 +3,7 @@
 import {
   Color,
   Float32BufferAttribute,
+  LineSegments,
   Mesh,
   OrthographicCamera,
   PlaneGeometry,
@@ -127,14 +128,11 @@ function setGeometry(width, height, density) {
  * vertex and fragment shaders. Also adds the required uniform
  * declarations to the start of the glsl shader file string.
  * @param {Object} uniforms
- * @param {boolean} wireframe
  * @returns {THREE.ShaderMaterial} three.js shader material
  */
 function setMaterial(options = {}) {
-  const wireframe = !!options.wireframe;
   const uniformDeclarations = getDeclarations(options.uniforms || {});
   return new ShaderMaterial({
-    wireframe,
     uniforms: options.uniforms,
     vertexShader: `${uniformDeclarations}\n${vertexShader}`,
     fragmentShader: `${uniformDeclarations}\n${fragmentShader}`,
@@ -229,11 +227,12 @@ export default class WaveGradient {
     /** @private */
     this.material = setMaterial({
       uniforms: this.uniforms,
-      wireframe: this.config.wireframe,
     });
 
     /** @private */
-    this.mesh = new Mesh(this.geometry, this.material);
+    this.mesh = this.config.wireframe
+      ? new LineSegments(this.geometry, this.material)
+      : new Mesh(this.geometry, this.material);
 
     /** @private */
     this.scene = new Scene();
