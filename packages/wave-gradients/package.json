@@ -1,10 +1,9 @@
 {
   "name": "wave-gradients",
   "version": "0.0.0",
-  "main": "dist/wave-gradient.cjs.js",
-  "module": "dist/wave-gradient.esm.js",
-  "browser": "dist/wave-gradient.umd.js",
-  "sideEffects": false,
+  "exports": {
+    ".": "./dist/wave-gradients.js"
+  },
   "files": [
     "dist"
   ],
