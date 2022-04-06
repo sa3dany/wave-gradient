@@ -9,7 +9,6 @@ import {
   PlaneGeometry,
   Scene,
   ShaderMaterial,
-  StaticReadUsage,
   WebGLRenderer,
 } from "three";
 
@@ -116,9 +115,7 @@ function setGeometry(width, height, density) {
     }
   }
 
-  const uvAttribute = new Float32BufferAttribute(uvs, 2);
-  uvAttribute.setUsage(StaticReadUsage);
-  geometry.setAttribute("uv", uvAttribute);
+  geometry.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
 
   return geometry;
 }
