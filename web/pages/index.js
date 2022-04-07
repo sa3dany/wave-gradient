@@ -1,7 +1,6 @@
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 
-import { StripeGradient, WaveGradient } from "wave-gradients";
 import Controls from "../components/controls";
 import PageHeader from "../components/pagehead";
 import CanvasHeader from "../components/canvashead";
@@ -9,11 +8,19 @@ import CanvasHeader from "../components/canvashead";
 const GRADIENT_COLORS = ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"];
 
 export default function HomePage() {
+  const [gradientClass, setGradientClass] = useState({});
   const [stripeContainer, threeContainer] = [useRef(), useRef()];
   const [three, setThree] = useState({});
   const [wireframe, setWireframe] = useState(false);
   const [time, setTime] = useState(Math.random() * 1000 * 60 * 60);
   const [isPlaying, setIsPlaying] = useState(true);
+
+  // Load gradient source
+  useEffect(() => {
+    import("wave-gradients").then(({ StripeGradient, WaveGradient }) => {
+      setGradientClass({ StripeGradient, WaveGradient });
+    });
+  }, []);
 
   // Get rid of the three.js warning about multiple instances when
   // developing
@@ -23,7 +30,8 @@ export default function HomePage() {
 
   // Stripe gradient init
   useEffect(() => {
-    const gradient = new StripeGradient({ wireframe });
+    if (!gradientClass.StripeGradient) return;
+    const gradient = new gradientClass.StripeGradient({ wireframe });
     gradient.t = time;
     gradient.initGradient("#stripe-canvas");
     GRADIENT_COLORS.forEach((hex, i) => {
@@ -35,11 +43,12 @@ export default function HomePage() {
     return () => {
       gradient.disconnect();
     };
-  }, [stripeContainer, wireframe, time]);
+  }, [gradientClass, stripeContainer, wireframe, time]);
 
   // three.js gradient init
   useEffect(() => {
-    const gradient = new WaveGradient(threeContainer.current, {
+    if (!gradientClass.WaveGradient) return;
+    const gradient = new gradientClass.WaveGradient(threeContainer.current, {
       colors: GRADIENT_COLORS,
       density: [0.06, 0.16],
       wireframe,
@@ -54,7 +63,7 @@ export default function HomePage() {
       window.removeEventListener("resize", onResize);
       gradient.dispose();
     };
-  }, [threeContainer, wireframe, time]);
+  }, [gradientClass, threeContainer, wireframe, time]);
 
   useEffect(() => {
     if (three.state) {
