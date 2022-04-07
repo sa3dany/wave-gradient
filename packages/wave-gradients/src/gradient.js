@@ -7,15 +7,13 @@ import {
   Mesh,
   OrthographicCamera,
   PlaneGeometry,
+  RawShaderMaterial,
   Scene,
-  ShaderMaterial,
   WebGLRenderer,
 } from "three";
 
-import { getDeclarations } from "./glsl-declare";
-
-import vertexShader from "./shader/vertex.glsl";
-import fragmentShader from "./shader/fragment.glsl";
+import vertexShader from "./shader/noise.vert";
+import fragmentShader from "./shader/color.frag";
 
 /**
  * Default options.
@@ -128,11 +126,10 @@ function setGeometry(width, height, density) {
  * @returns {THREE.ShaderMaterial} three.js shader material
  */
 function setMaterial(options = {}) {
-  const uniformDeclarations = getDeclarations(options.uniforms || {});
-  return new ShaderMaterial({
+  return new RawShaderMaterial({
     uniforms: options.uniforms,
-    vertexShader: `${uniformDeclarations}\n${vertexShader}`,
-    fragmentShader: `${uniformDeclarations}\n${fragmentShader}`,
+    vertexShader,
+    fragmentShader,
   });
 }
 

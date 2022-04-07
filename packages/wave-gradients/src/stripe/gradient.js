@@ -1,7 +1,7 @@
 import { MiniGl } from "./minigl";
 
-import vertexShader from "./vertex.glsl";
-import fragmentShader from "./fragment.glsl";
+import vertexShader from "./noise.vert";
+import fragmentShader from "./color.frag";
 
 function normalizeColor(hexCode) {
   return [
