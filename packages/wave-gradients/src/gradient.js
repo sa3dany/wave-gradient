@@ -179,11 +179,11 @@ export default class WaveGradient {
 
     /** @private */
     this.container = this.domElement.parentElement;
-    const { clientWidth, scrollHeight } = this.container;
+    const { clientWidth, clientHeight } = this.container;
 
     /** @private */
     this.uniforms = {
-      resolution: { value: new Float32Array([clientWidth, scrollHeight]) },
+      resolution: { value: new Float32Array([clientWidth, clientHeight]) },
       u_time: { value: this.config.time },
       u_global: {
         value: {
@@ -218,10 +218,10 @@ export default class WaveGradient {
     };
 
     /** @private */
-    this.camera = setCamera(this.camera, clientWidth, scrollHeight);
+    this.camera = setCamera(this.camera, clientWidth, clientHeight);
 
     /** @private */
-    this.geometry = setGeometry(clientWidth, scrollHeight, this.config.density);
+    this.geometry = setGeometry(clientWidth, clientHeight, this.config.density);
 
     /** @private */
     this.material = setMaterial({
@@ -242,7 +242,7 @@ export default class WaveGradient {
       canvas: this.domElement,
       antialias: true,
     });
-    this.renderer.setSize(clientWidth, scrollHeight);
+    this.renderer.setSize(clientWidth, clientHeight);
     this.renderer.setClearAlpha(0);
 
     /** @private */
@@ -287,21 +287,21 @@ export default class WaveGradient {
    * @returns {WaveGradient} self for chaining
    */
   resize() {
-    const { clientWidth, scrollHeight } = this.container;
+    const { clientWidth, clientHeight } = this.container;
 
     this.geometry.dispose();
-    this.geometry = setGeometry(clientWidth, scrollHeight, this.config.density);
+    this.geometry = setGeometry(clientWidth, clientHeight, this.config.density);
 
     const oldMesh = this.mesh;
     this.mesh = new Mesh(this.geometry, this.material);
     this.scene.remove(oldMesh);
     this.scene.add(this.mesh);
 
-    setCamera(this.camera, clientWidth, scrollHeight);
-    this.renderer.setSize(clientWidth, scrollHeight);
+    setCamera(this.camera, clientWidth, clientHeight);
+    this.renderer.setSize(clientWidth, clientHeight);
     this.uniforms.resolution.value = new Float32Array([
       clientWidth,
-      scrollHeight,
+      clientHeight,
     ]);
 
     return this;
