@@ -29,6 +29,7 @@ const DEFAULTS = {
   amplitude: 320,
   colors: [0xef008f, 0x6ec3f4, 0x7038ff, 0xffba27],
   density: [0.06, 0.16],
+  fps: 24,
   frequency: [0.00014, 0.00029],
   seed: 5,
   time: 0,
@@ -146,7 +147,7 @@ function setMaterial(options = {}) {
  * @returns {void}
  */
 function animate(now) {
-  const frameTime = 1000 / 24;
+  const frameTime = 1000 / this.config.fps;
   const shouldSkipFrame = now - this.state.lastFrameTime < frameTime;
 
   if (!shouldSkipFrame) {
