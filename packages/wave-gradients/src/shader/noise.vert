@@ -89,7 +89,11 @@ void main() {
   noise *= 1.0 - pow(abs(uv.y), 2.0);
   noise = max(0.0, noise);
 
-  vec3 pos = vec3(position.x, position.y + noise + tilt, position.z);
+  vec3 pos = vec3(
+    position.x,
+    position.y + tilt + noise,
+    position.z
+  );
 
   color = u_baseColor;
 
