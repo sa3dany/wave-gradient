@@ -12,6 +12,10 @@ import {
   WebGLRenderer,
 } from "three";
 
+/**
+ * Import the two shader stages: vertex and fragment. These are imported
+ * using a custom rollup plugin to read these files as strings
+ */
 import vertexShader from "./shader/noise.vert";
 import fragmentShader from "./shader/color.frag";
 
@@ -27,6 +31,7 @@ const DEFAULTS = {
   density: [0.06, 0.16],
   frequency: [0.00014, 0.00029],
   seed: 5,
+  time: 0,
   wireframe: false,
 };
 
@@ -141,7 +146,7 @@ function setMaterial(options = {}) {
  * @returns {void}
  */
 function animate(now) {
-  const frameTime = 1000 / 24; // 24 FPS
+  const frameTime = 1000 / 24;
   const shouldSkipFrame = now - this.state.lastFrameTime < frameTime;
 
   if (!shouldSkipFrame) {
@@ -247,7 +252,10 @@ export default class WaveGradient {
     };
 
     /** @public */
-    this.time = 0;
+    this.time = this.config.time;
+
+    // Render one frame on init
+    requestAnimationFrame(animate.bind(this));
   }
 
   /**
