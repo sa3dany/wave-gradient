@@ -2,68 +2,91 @@ import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 
 import Controls from "../components/controls";
-import PageHeader from "../components/pagehead";
-import CanvasHeader from "../components/canvashead";
+
+// ---------------------------------------------------------------------
+// Components
+// ---------------------------------------------------------------------
+
+function Layout({ children }) {
+  return <div className="relative mx-auto h-full px-5">{children}</div>;
+}
+
+function PageHeader({ children }) {
+  return (
+    <header className="flex-auto self-stretch font-bold leading-none tracking-wider">
+      <h1 className="flex h-full max-w-fit select-none items-end rounded-b-3xl bg-gray-900 p-4 font-display text-3xl uppercase text-white dark:bg-gray-50 dark:text-black sm:p-6 sm:text-5xl">
+        {children}
+      </h1>
+    </header>
+  );
+}
+
+// ---------------------------------------------------------------------
+// Page Componenst
+// ---------------------------------------------------------------------
 
 export default function DemoPaage() {
-  const GRADIENT_COLORS = ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"];
-  const [gradientClass, setGradientClass] = useState({});
-  const threeContainer = useRef();
-  const [three, setThree] = useState({});
-  const [wireframe, setWireframe] = useState(false);
+  const [waveGradient, setWaveGradient] = useState({
+    loaded: false,
+    Class: null,
+  });
+
+  const [gradient, setGradient] = useState();
   const [time, setTime] = useState(Math.random() * 1000 * 60 * 60);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [wireframe, setWireframe] = useState(false);
 
-  // Load gradient source
+  const canvas = useRef();
+
+  /**
+   * Load the wave gradient library
+   */
   useEffect(() => {
     import("wave-gradients").then(({ WaveGradient }) => {
-      setGradientClass({ WaveGradient });
+      setWaveGradient({ Class: WaveGradient });
     });
   }, []);
 
-  // Get rid of the three.js warning about multiple instances when
-  // developing
+  /**
+   * Initialize the gradient
+   */
   useEffect(() => {
-    delete window.__THREE__;
-  });
+    if (!waveGradient.Class) {
+      return;
+    }
 
-  // three.js gradient init
-  useEffect(() => {
-    if (!gradientClass.WaveGradient) return;
-    const gradient = new gradientClass.WaveGradient(threeContainer.current, {
-      colors: GRADIENT_COLORS,
-      density: [0.06, 0.16],
+    const gradient = new waveGradient.Class(canvas.current, {
+      colors: ["#ef008f", "#6ec3f4", "#7038ff", "#ffba26"],
+      density: [0.048, 0.12],
+      time,
       wireframe,
     });
-    const onResize = () => {
+
+    setGradient(gradient);
+    isPlaying && gradient.play();
+
+    function resizeGradient() {
       gradient.resize();
-    };
-    gradient.time = time;
-    window.addEventListener("resize", onResize);
-    setThree(gradient);
+    }
+    window.addEventListener("resize", resizeGradient);
+
     return () => {
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", resizeGradient);
       gradient.dispose();
     };
-  }, [gradientClass, threeContainer, wireframe, time]);
-
-  useEffect(() => {
-    if (three.state) {
-      if (isPlaying) {
-        three.play();
-      } else {
-        three.state.playing = isPlaying;
-      }
-    }
-  }, [isPlaying, three]);
+  }, [waveGradient.Class, canvas, time, wireframe, isPlaying]);
 
   return (
     <Layout>
-      <div className="relative z-10 items-end justify-between space-y-6 sm:flex sm:h-24 sm:space-y-0">
+      <div className="absolute inset-0 overflow-hidden">
+        <canvas ref={canvas} />
+      </div>
+
+      <div className="isolate items-end justify-between space-y-6 mix-blend-normal sm:flex sm:h-24 sm:space-y-0">
         <PageHeader>
-          Wave Gradient
+          Wave Gradients
           <Head>
-            <title>Wave Gradient</title>
+            <title>Wave Gradients</title>
           </Head>
         </PageHeader>
 
@@ -72,20 +95,17 @@ export default function DemoPaage() {
             wireframe,
             () => {
               setWireframe(!wireframe);
-              setTime(three.time);
+              setTime(gradient.time);
             },
           ]}
           usePlay={() => [
             isPlaying,
             () => {
               setIsPlaying(!isPlaying);
+              setTime(gradient.time);
             },
           ]}
         />
-      </div>
-
-      <div className="absolute inset-0 overflow-y-hidden">
-        <canvas ref={threeContainer} />
       </div>
     </Layout>
   );
