@@ -18,6 +18,11 @@ export default function Document() {
           href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap"
           rel="stylesheet"
         />
+        <style>{`
+          html, body, #__next {
+            height: 100%;
+          }
+        `}</style>
       </Head>
       <body className="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
         <Main />

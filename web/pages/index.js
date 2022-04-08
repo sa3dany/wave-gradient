@@ -5,11 +5,10 @@ import Controls from "../components/controls";
 import PageHeader from "../components/pagehead";
 import CanvasHeader from "../components/canvashead";
 
-const GRADIENT_COLORS = ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"];
-
-export default function HomePage() {
+export default function DemoPaage() {
+  const GRADIENT_COLORS = ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"];
   const [gradientClass, setGradientClass] = useState({});
-  const [stripeContainer, threeContainer] = [useRef(), useRef()];
+  const threeContainer = useRef();
   const [three, setThree] = useState({});
   const [wireframe, setWireframe] = useState(false);
   const [time, setTime] = useState(Math.random() * 1000 * 60 * 60);
@@ -17,8 +16,8 @@ export default function HomePage() {
 
   // Load gradient source
   useEffect(() => {
-    import("wave-gradients").then(({ StripeGradient, WaveGradient }) => {
-      setGradientClass({ StripeGradient, WaveGradient });
+    import("wave-gradients").then(({ WaveGradient }) => {
+      setGradientClass({ WaveGradient });
     });
   }, []);
 
@@ -27,23 +26,6 @@ export default function HomePage() {
   useEffect(() => {
     delete window.__THREE__;
   });
-
-  // Stripe gradient init
-  useEffect(() => {
-    if (!gradientClass.StripeGradient) return;
-    const gradient = new gradientClass.StripeGradient({ wireframe });
-    gradient.t = time;
-    gradient.initGradient("#stripe-canvas");
-    GRADIENT_COLORS.forEach((hex, i) => {
-      stripeContainer.current.style.setProperty(
-        `--gradient-color-${i + 1}`,
-        hex
-      );
-    });
-    return () => {
-      gradient.disconnect();
-    };
-  }, [gradientClass, stripeContainer, wireframe, time]);
 
   // three.js gradient init
   useEffect(() => {
@@ -76,9 +58,9 @@ export default function HomePage() {
   }, [isPlaying, three]);
 
   return (
-    <main className="mx-auto mb-6 px-5">
-      <div className="items-end justify-between space-y-6 sm:flex sm:h-24 sm:space-y-0">
-        <PageHeader className="flex-auto self-stretch">
+    <Layout>
+      <div className="relative z-10 items-end justify-between space-y-6 sm:flex sm:h-24 sm:space-y-0">
+        <PageHeader>
           Wave Gradient
           <Head>
             <title>Wave Gradient</title>
@@ -102,29 +84,9 @@ export default function HomePage() {
         />
       </div>
 
-      <section className="relative mt-6">
-        <CanvasHeader>stripe&apos;s Implementation</CanvasHeader>
-        <div
-          className="overflow-clip rounded-3xl border-4 border-black dark:border-white"
-          style={{ height: "calc(50vh - ((4.5rem + 6rem) / 2))" }}
-        >
-          <canvas
-            id="stripe-canvas"
-            ref={stripeContainer}
-            className="block h-full w-full"
-          />
-        </div>
-      </section>
-
-      <section className="relative mt-6">
-        <CanvasHeader>three.js Implementation</CanvasHeader>
-        <div
-          className="overflow-clip rounded-3xl border-4 border-black dark:border-white"
-          style={{ height: "calc(50vh - ((4.5rem + 6rem) / 2))" }}
-        >
-          <canvas ref={threeContainer} />
-        </div>
-      </section>
-    </main>
+      <div className="absolute inset-0 overflow-y-hidden">
+        <canvas ref={threeContainer} />
+      </div>
+    </Layout>
   );
 }
