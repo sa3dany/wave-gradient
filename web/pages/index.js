@@ -56,7 +56,7 @@ export default function DemoPaage() {
     }
 
     const gradient = new waveGradient.Class(canvas.current, {
-      colors: ["#ef008f", "#6ec3f4", "#7038ff", "#ffba26"],
+      colors: ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"],
       density: [0.048, 0.12],
       time,
       wireframe,
