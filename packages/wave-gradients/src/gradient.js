@@ -271,6 +271,17 @@ export default class WaveGradient {
   }
 
   /**
+   * Stop animating the gradient.
+   * @returns {WaveGradient} self for chaining
+   */
+  pause() {
+    if (this.state.playing) {
+      this.state.playing = false;
+    }
+    return this;
+  }
+
+  /**
    * Should be called if the contaning DOM node changes size to update
    * the canvas, camera & geometry to the new size.
    * @returns {WaveGradient} self for chaining
