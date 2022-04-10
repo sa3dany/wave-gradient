@@ -55,6 +55,11 @@ export default function DemoPaage() {
       return;
     }
 
+    // Get rid of a three.js warning due to HMR during development
+    if (process.env.NODE_ENV === "development") {
+      delete window.__THREE__;
+    }
+
     const gradient = new waveGradient.Class(canvas.current, {
       colors: ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"],
       density: [0.048, 0.12],
