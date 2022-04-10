@@ -165,7 +165,7 @@ function animate(now) {
 /**
  * Class that recreates the https://stripe.com animated gradient.
  */
-export default class WaveGradient {
+export class WaveGradient {
   /**
    * Create a gradient instance. The element can be canvas HTML element
    * or a css query, in which case the first matching element will be
