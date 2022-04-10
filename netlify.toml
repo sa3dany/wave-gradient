@@ -3,4 +3,4 @@ package = "@netlify/plugin-nextjs"
 
 [build]
 command = "npm run build"
-publish = "web/.next"
+publish = "demo/.next"
