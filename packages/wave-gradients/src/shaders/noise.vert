@@ -1,36 +1,16 @@
-#extension GL_GOOGLE_include_directive: enable
-
 precision highp float;
 
 // ---------------------------------------------------------------------
-// Structs
+// Includes
 // ---------------------------------------------------------------------
 
-vec3 blendNormal(vec3, vec3, float);
-float psrdnoise(vec3, vec3, float, out vec3);
+// This has no effect on runtime, it is here simply because it is
+// required by the GLSL linter I am using in order to support `#include`
+// macros
+#extension GL_GOOGLE_include_directive: enable
 
-struct Global {
-  vec2 noiseFreq;
-  float noiseSpeed;
-};
-
-struct VertDeform {
-  vec2 noiseFreq;
-  float noiseAmp;
-  float noiseSpeed;
-  float noiseFlow;
-  float noiseSeed;
-};
-
-struct WaveLayers {
-  vec3 color;
-  vec2 noiseFreq;
-  float noiseSpeed;
-  float noiseFlow;
-  float noiseSeed;
-  float noiseFloor;
-  float noiseCeil;
-};
+#include "includes/blend.glsl"
+#include "includes/noise.glsl"
 
 // ---------------------------------------------------------------------
 // Uniforms
@@ -43,16 +23,37 @@ uniform mat4 projectionMatrix;
 // custom
 uniform vec2 resolution;
 uniform float u_time;
+uniform struct Global {
+  vec2 noiseFreq;
+  float noiseSpeed;
+} u_global;
+
+uniform struct VertDeform {
+  vec2 noiseFreq;
+  float noiseAmp;
+  float noiseSpeed;
+  float noiseFlow;
+  float noiseSeed;
+} u_vertDeform;
+
 uniform vec3 u_baseColor;
-uniform Global u_global;
-uniform VertDeform u_vertDeform;
-uniform WaveLayers u_waveLayers[4];
+uniform struct WaveLayers {
+  vec3 color;
+  vec2 noiseFreq;
+  float noiseSpeed;
+  float noiseFlow;
+  float noiseSeed;
+  float noiseFloor;
+  float noiseCeil;
+} u_waveLayers[4];
 const int u_waveLayers_length = 4; // TODO: remove
 
 // ---------------------------------------------------------------------
 // Attributes
 // ---------------------------------------------------------------------
 
+// three.js built-in attributes, except uv, which is instead of being
+// normalized between 0.0-1.0, it's normalized between -1.0-1.0
 attribute vec3 position;
 attribute vec3 normal;
 attribute vec2 uv;
@@ -62,13 +63,6 @@ attribute vec2 uv;
 // ---------------------------------------------------------------------
 
 varying vec3 color;
-
-// ---------------------------------------------------------------------
-// Includes
-// ---------------------------------------------------------------------
-
-#include "includes/blend.glsl"
-#include "includes/noise.glsl"
 
 // ---------------------------------------------------------------------
 // Main
