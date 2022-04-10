@@ -2,7 +2,7 @@ import { build } from "esbuild";
 import { glsl } from "esbuild-plugin-glsl-include";
 
 const watch = process.argv.includes("--watch");
-watch && console.log("Watching for changes...");
+watch && console.log("ready - watching for changes");
 
 build({
   bundle: true,
@@ -11,7 +11,7 @@ build({
   outfile: "dist/wave-gradients.js",
   plugins: [glsl()],
   sourcemap: watch,
-  watch: {
+  watch: watch && {
     onRebuild(error) {
       !error && console.log("event - watch build succeeded");
     },
