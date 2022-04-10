@@ -16,8 +16,8 @@ import {
  * Import the two shader stages: vertex and fragment. These are imported
  * using a custom rollup plugin to read these files as strings
  */
-import vertexShader from "./shader/noise.vert";
-import fragmentShader from "./shader/color.frag";
+import vertexShader from "./shaders/noise.vert";
+import fragmentShader from "./shaders/color.frag";
 
 /**
  * Default options.
