@@ -1,5 +1,5 @@
 {
-  "name": "wave-gradients-site",
+  "name": "demo",
   "private": true,
   "scripts": {
     "dev": "next dev",
