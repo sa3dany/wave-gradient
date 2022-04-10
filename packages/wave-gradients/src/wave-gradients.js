@@ -205,7 +205,8 @@ export class WaveGradient {
       },
       u_baseColor: { value: new Color(this.config.colors[0]) },
       u_waveLayers: {
-        value: this.config.colors.slice(1).map((c, i) => ({
+        value: this.config.colors.slice(1).map((c, i, a) => ({
+          isSet: true,
           color: new Color(c),
           noiseFreq: new Float32Array([
             3 + i / this.config.colors.length,
