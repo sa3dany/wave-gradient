@@ -105,7 +105,9 @@ function setGeometry(width, height, density) {
   const gridY = Math.ceil(density[1] * height);
   const geometry = new PlaneGeometry(width, height, gridX, gridY);
 
-  // Rotate to be flat across the z axis (to match strip's plane)
+  // Rotate to be flat across the z axis (to match strip's plane) In the
+  // vertex shader the plane is titlted in a way that fills the entire
+  // viewport
   geometry.rotateX(-90 * (Math.PI / 180));
 
   // Three.js creates uvs scaled between [0,1]. Here we assign new uvs
