@@ -40,8 +40,11 @@ uniform struct VertDeform {
   float noiseSeed;
 } u_vertDeform;
 
+#define MAX_COLOR_LAYERS 9
+
 uniform vec3 u_baseColor;
 uniform struct WaveLayers {
+  bool isSet;
   vec3 color;
   vec2 noiseFreq;
   float noiseSpeed;
@@ -49,8 +52,7 @@ uniform struct WaveLayers {
   float noiseSeed;
   float noiseFloor;
   float noiseCeil;
-} u_waveLayers[4];
-const int u_waveLayers_length = 4; // TODO: remove
+} u_waveLayers[MAX_COLOR_LAYERS];
 
 // ---------------------------------------------------------------------
 // Attributes
@@ -98,8 +100,13 @@ void main() {
 
   color = u_baseColor;
 
-  for (int i = 0; i < u_waveLayers_length; i++) {
+  for (int i = 0; i < MAX_COLOR_LAYERS; i++) {
     WaveLayers layer = u_waveLayers[i];
+
+    // Break from loop on the first undefinde wave layer
+    if (!layer.isSet) {
+      break;
+    }
 
     float noise = smoothstep(
       layer.noiseFloor,

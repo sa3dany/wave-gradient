@@ -220,6 +220,19 @@ export class WaveGradient {
       },
     };
 
+    while (this.uniforms["u_waveLayers"].value.length < 10) {
+      this.uniforms["u_waveLayers"].value.push({
+        isSet: false,
+        color: new Color(0),
+        noiseFreq: new Float32Array([0, 0]),
+        noiseSpeed: 0,
+        noiseFlow: 0,
+        noiseSeed: 0,
+        noiseFloor: 0,
+        noiseCeil: 0,
+      });
+    }
+
     /** @private */
     this.camera = setCamera(this.camera, clientWidth, clientHeight);
 
