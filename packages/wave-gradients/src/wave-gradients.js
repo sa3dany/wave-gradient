@@ -321,6 +321,12 @@ export class WaveGradient {
       clientHeight,
     ]);
 
+    if (!this.state.playing) {
+      // If the gradient is paused, render a frame on resize anyway to
+      // refresh the canvas
+      this.renderer.render(this.scene, this.camera);
+    }
+
     return this;
   }
 
