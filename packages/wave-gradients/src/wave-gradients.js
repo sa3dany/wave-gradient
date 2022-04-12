@@ -48,7 +48,9 @@ function getOptions(options) {
     return allOptions;
   }
   for (const [option] of Object.entries(DEFAULTS)) {
-    if (options[option] !== undefined) allOptions[option] = options[[option]];
+    if (options[option] !== undefined) {
+      allOptions[option] = options[[option]];
+    }
   }
   return allOptions;
 }
@@ -159,7 +161,9 @@ function animate(now) {
     this.renderer.render(this.scene, this.camera);
   }
 
-  if (this.state.playing) requestAnimationFrame(animate.bind(this));
+  if (this.state.playing) {
+    requestAnimationFrame(animate.bind(this));
+  }
 }
 
 /**
@@ -263,12 +267,15 @@ export class WaveGradient {
     this.renderer.setClearAlpha(0);
 
     /** @private */
-    this.state = {
-      playing: false,
-      lastFrameTime: -Infinity,
-    };
+    this.state = { playing: false, lastFrameTime: -Infinity };
 
-    /** @public */
+    /**
+     * The time the animation has been running in milliseconds. Can be
+     * set while the animation is running to seek to a specific point in
+     * the animation.
+     * @public
+     * @type {number}
+     */
     this.time = this.config.time;
 
     // Render one frame on init
