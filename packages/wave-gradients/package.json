@@ -2,6 +2,7 @@
   "name": "wave-gradients",
   "version": "0.0.0",
   "type": "module",
+  "main": "./dist/wave-gradients.js",
   "exports": {
     ".": "./dist/wave-gradients.js"
   },
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "esbuild": "^0.14.34",
-    "esbuild-plugin-glsl-include": "^0.0.5"
+    "esbuild-plugin-glsl-include": "^0.0.5",
+    "eslint-plugin-jsdoc": "^39.2.0"
   }
 }

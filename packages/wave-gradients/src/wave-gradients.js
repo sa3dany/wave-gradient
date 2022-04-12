@@ -1,4 +1,12 @@
-/** @module */
+/**
+ * @file Wave Gradients main class
+ * @author Mohamed ElSaadany
+ * @module wave-gradients
+ */
+
+// ---------------------------------------------------------------------
+// Imports
+// ---------------------------------------------------------------------
 
 import {
   Color,
@@ -19,11 +27,41 @@ import {
 import vertexShader from "./shaders/noise.vert";
 import fragmentShader from "./shaders/color.frag";
 
+// ---------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------
+
+/**
+ * @typedef {number} DOMHighResTimeStamp
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
+ */
+
+/**
+ * WaveGradient options.
+ *
+ * @typedef {object} WaveGradientOptions
+ * @property {number} amplitude - Amplitude of the wave.
+ * @property {Array<number>} colors - Array of colors to use for the.
+ *   gradient. Limited to 10 colors.
+ * @property {Array<number>} density - Level of detail of the plane
+ *   gemotery in the x & z directions.
+ * @property {number} fps - animation FPS.
+ * @property {number} seed - Seed for the noise function.
+ * @property {number} speed - Speed of the waves.
+ * @property {number} time - Time of the animation.
+ * @property {boolean} wireframe - Wireframe rendering mode.
+ */
+
+// ---------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------
+
 /**
  * Default options.
+ *
  * @constant
- * @type {Object}
  * @default
+ * @type {WaveGradientOptions}
  */
 const DEFAULTS = {
   amplitude: 320,
@@ -36,11 +74,16 @@ const DEFAULTS = {
   wireframe: false,
 };
 
+// ---------------------------------------------------------------------
+// Helper functions
+// ---------------------------------------------------------------------
+
 /**
  * Mix default and provided options and return an object with the full
  * options set with default values for missing options.
- * @param {Object} options
- * @returns {Object} Full options object
+ *
+ * @param {object} options - Provided options
+ * @returns {object} Full options object
  */
 function getOptions(options) {
   const allOptions = { ...DEFAULTS };
@@ -58,9 +101,10 @@ function getOptions(options) {
 /**
  * Validates that an HTML canvas element or a css selector matching a
  * canvas element are provided.
- * @param {string|HTMLElement} input
+ *
+ * @param {string|HTMLElement} input - Canvas element or selector
  * @throws if no canvas element found
- * @returns {HTMLCanvasElement}
+ * @returns {HTMLCanvasElement} Canvas element
  */
 function getContainer(input) {
   const element =
@@ -73,12 +117,13 @@ function getContainer(input) {
 
 /**
  * Updates orthgraphic camera given a width, height.
- * @param {THREE.OrthographicCamera|undefined} camera
- * @param {number} width
- * @param {number} height
- * @param {number} near
- * @param {number} far
- * @returns {THREE.OrthographicCamera}
+ *
+ * @param {OrthographicCamera|undefined} camera - Camera to update
+ * @param {number} width - Width of the viewport
+ * @param {number} height - Height of the viewport
+ * @param {number} near - Near plane
+ * @param {number} far - Far plane
+ * @returns {OrthographicCamera} Updated camera
  */
 function setCamera(camera, width, height, near = -1000, far = 1000) {
   const left = width / -2;
@@ -97,10 +142,11 @@ function setCamera(camera, width, height, near = -1000, far = 1000) {
 
 /**
  * Creates a new three.js plane geometry instance
- * @param {number} width
- * @param {number} height
- * @param {number[]} density
- * @returns {THREE.PlaneGeometry} three.js plane geometry
+ *
+ * @param {number} width - Width of the plane
+ * @param {number} height - Height of the plane
+ * @param {number[]} density - Level of detail of the plane geometry
+ * @returns {PlaneGeometry} three.js plane geometry
  */
 function setGeometry(width, height, density) {
   const gridX = Math.ceil(density[0] * width);
@@ -130,10 +176,10 @@ function setGeometry(width, height, density) {
 
 /**
  * Creates a three.js material with the given uniforms and the imported
- * vertex and fragment shaders. Also adds the required uniform
- * declarations to the start of the glsl shader file string.
- * @param {Object} uniforms
- * @returns {THREE.ShaderMaterial} three.js shader material
+ * vertex and fragment shaders.
+ *
+ * @param {object} options - material options
+ * @returns {RawShaderMaterial} three.js shader material
  */
 function setMaterial(options = {}) {
   return new RawShaderMaterial({
@@ -146,7 +192,8 @@ function setMaterial(options = {}) {
 /**
  * Animates the gradient by adjusting the time value sent to the vertex
  * shader.
- * @param {DOMHighResTimeStamp} now
+ *
+ * @param {DOMHighResTimeStamp} now - Current frame timestamp
  * @this {WaveGradient}
  * @returns {void}
  */
@@ -174,8 +221,9 @@ export class WaveGradient {
    * Create a gradient instance. The element can be canvas HTML element
    * or a css query, in which case the first matching element will be
    * used.
-   * @param {HTMLCanvasElement|string} element
-   * @param {Object} options
+   *
+   * @param {HTMLCanvasElement|string} element - canvas element or css query
+   * @param {WaveGradientOptions} options - gradient options
    */
   constructor(element, options = {}) {
     /** @private */
@@ -271,6 +319,7 @@ export class WaveGradient {
      * The time the animation has been running in milliseconds. Can be
      * set while the animation is running to seek to a specific point in
      * the animation.
+     *
      * @public
      * @type {number}
      */
@@ -302,7 +351,8 @@ export class WaveGradient {
 
   /**
    * Start animating the gradient.
-   * @returns {WaveGradient} self for chaining
+   *
+   * @returns {this} self for chaining
    */
   play() {
     if (!this.state.playing) {
@@ -314,7 +364,8 @@ export class WaveGradient {
 
   /**
    * Stop animating the gradient.
-   * @returns {WaveGradient} self for chaining
+   *
+   * @returns {this} self for chaining
    */
   pause() {
     if (this.state.playing) {
@@ -326,7 +377,8 @@ export class WaveGradient {
   /**
    * Should be called if the contaning DOM node changes size to update
    * the canvas, camera & geometry to the new size.
-   * @returns {WaveGradient} self for chaining
+   *
+   * @returns {this} self for chaining
    */
   resize() {
     this.geometry.dispose();
@@ -356,7 +408,8 @@ export class WaveGradient {
 
   /**
    * Cleanup any three.js resources, DOM nodes used by the gradient.
-   * @returns {WaveGradient} self for chaining
+   *
+   * @returns {this} self for chaining
    */
   dispose() {
     this.scene.clear();
