@@ -186,11 +186,10 @@ export class WaveGradient {
 
     /** @private */
     this.container = this.domElement.parentElement;
-    const { clientWidth, clientHeight } = this.container;
 
     /** @private */
     this.uniforms = {
-      resolution: { value: new Float32Array([clientWidth, clientHeight]) },
+      resolution: { value: new Float32Array([this.width, this..height]) },
       u_time: { value: this.config.time },
       u_global: {
         value: {
@@ -238,21 +237,20 @@ export class WaveGradient {
       });
     }
 
-    /** @private */
-    this.camera = setCamera(this.camera, clientWidth, clientHeight);
+    this.camera = setCamera(this.camera, this.width, this.height);
 
     /** @private */
-    this.geometry = setGeometry(clientWidth, clientHeight, this.config.density);
+    this.geometry = setGeometry(this.width, this.height, this.config.density);
 
     /** @private */
-    this.material = setMaterial({
-      uniforms: this.uniforms,
+
+    /** @private */
+    this.material = setMaterial({ uniforms: this.uniforms });
+
+    /** @private */
+    this.mesh = setMesh(this.geometry, this.material, {
+      wireframe: this.config.wireframe,
     });
-
-    /** @private */
-    this.mesh = this.config.wireframe
-      ? new LineSegments(this.geometry, this.material)
-      : new Mesh(this.geometry, this.material);
 
     /** @private */
     this.scene = new Scene();
@@ -263,7 +261,7 @@ export class WaveGradient {
       canvas: this.domElement,
       antialias: true,
     });
-    this.renderer.setSize(clientWidth, clientHeight);
+    this.renderer.setSize(this.width, this.height);
     this.renderer.setClearAlpha(0);
 
     /** @private */
@@ -280,6 +278,26 @@ export class WaveGradient {
 
     // Render one frame on init
     requestAnimationFrame(animate.bind(this));
+  }
+
+  /**
+   * The containing element's width.
+   *
+   * @private
+   * @type {number}
+   */
+  get width() {
+    return this.container.clientWidth;
+  }
+
+  /**
+   * The containing element's height.
+   *
+   * @private
+   * @type {number}
+   */
+  get height() {
+    return this.container.clientHeight;
   }
 
   /**
@@ -311,22 +329,21 @@ export class WaveGradient {
    * @returns {WaveGradient} self for chaining
    */
   resize() {
-    const { clientWidth, clientHeight } = this.container;
-
     this.geometry.dispose();
-    this.geometry = setGeometry(clientWidth, clientHeight, this.config.density);
+    this.geometry = setGeometry(this.width, this.height, this.config.density);
 
     const oldMesh = this.mesh;
     this.mesh = new Mesh(this.geometry, this.material);
     this.scene.remove(oldMesh);
     this.scene.add(this.mesh);
 
-    setCamera(this.camera, clientWidth, clientHeight);
-    this.renderer.setSize(clientWidth, clientHeight);
-    this.uniforms.resolution.value = new Float32Array([
-      clientWidth,
-      clientHeight,
-    ]);
+    setCamera(this.camera, this.width, this.height);
+    this.renderer.setSize(this.width, this.height);
+    updateUniform(
+      this.uniforms,
+      "canvas",
+      new Float32Array([this.width, this.height])
+    );
 
     if (!this.state.playing) {
       // If the gradient is paused, render a frame on resize anyway to
