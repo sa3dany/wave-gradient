@@ -288,40 +288,71 @@ export class WaveGradient {
    * @param {WaveGradientOptions} options - gradient options
    */
   constructor(element, options = {}) {
-    /** @private */
+    /**
+     * @private
+     * @type {WaveGradientOptions}
+     */
     this.config = getOptions(options);
 
-    /** @private */
+    /**
+     * @private
+     * @type {HTMLCanvasElement}
+     */
     this.domElement = getContainer(element);
 
-    /** @private */
+    /**
+     * @private
+     * @type {HTMLElement}
+     */
     this.container = this.domElement.parentElement;
 
+    /**
+     * @private
+     * @type {OrthographicCamera}
+     */
     this.camera = setCamera(this.width, this.height);
 
-    /** @private */
+    /**
+     * @private
+     * @type {PlaneGeometry}
+     */
     this.geometry = setGeometry(this.width, this.height, this.config.density);
 
-    /** @private */
+    /**
+     * @private
+     * @type {object}
+     */
     this.uniforms = setUniforms({
       config: this.config,
       width: this.width,
       height: this.height,
     });
 
-    /** @private */
+    /**
+     * @private
+     * @type {RawShaderMaterial}
+     */
     this.material = setMaterial({ uniforms: this.uniforms });
 
-    /** @private */
+    /**
+     * @private
+     * @type {LineSegments|Mesh}
+     */
     this.mesh = setMesh(this.geometry, this.material, {
       wireframe: this.config.wireframe,
     });
 
-    /** @private */
+    /**
+     * @private
+     * @type {Scene}
+     */
     this.scene = new Scene();
     this.scene.add(this.mesh);
 
-    /** @private */
+    /**
+     * @private
+     * @type {WebGLRenderer}
+     */
     this.renderer = new WebGLRenderer({
       canvas: this.domElement,
       antialias: true,
