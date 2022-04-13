@@ -3,14 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { WaveGradient } from "wave-gradients";
 import { GithubIcon } from "../components/icons";
-
-// ---------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------
-
-function rgbToHex(rgb) {
-  return `#${rgb.map((c) => `0${c.toString(16)}`.slice(-2)).join("")}`;
-}
+import { usePalette } from "../lib/huemint";
 
 // ---------------------------------------------------------------------
 // Page components
@@ -53,32 +46,11 @@ export default function DemoPaage() {
   const [time, setTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [wireframe, setWireframe] = useState(false);
-  const [colors, setColors] = useState();
 
   const canvas = useRef();
 
-  /**
-   * Request a random color pallete
-   */
-  useEffect(() => {
-    fetch("https://colormind.io/api/", {
-      method: "POST",
-      body: JSON.stringify({ model: "ui" }),
-    })
-      .then((colorPalette) => {
-        colorPalette.json().then(({ result: colors }) => {
-          colors.pop();
-          setColors(colors.map(rgbToHex));
-        });
-      })
-      .catch(() => {
-        setColors(["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"]);
-      });
-  }, []);
+  const colors = usePalette();
 
-  /**
-   * Initialize the gradient
-   */
   useEffect(() => {
     if (!colors) {
       return;
