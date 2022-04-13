@@ -432,15 +432,15 @@ export class WaveGradient {
    * @returns {this} self for chaining
    */
   resize() {
-    this.geometry.dispose();
-    this.geometry = setGeometry(this.width, this.height, this.config.density);
-
     this.scene.remove(this.mesh);
+    this.geometry.dispose();
+
+    this.geometry = setGeometry(this.width, this.height, this.config.density);
     this.mesh = setMesh(this.geometry, this.material, {
       wireframe: this.config.wireframe,
     });
-    this.scene.add(this.mesh);
 
+    this.scene.add(this.mesh);
     this.camera = setCamera(this.width, this.height);
     this.renderer.setSize(this.width, this.height, false);
     this.uniforms.canvas.value = new Float32Array([this.width, this.height]);
