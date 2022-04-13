@@ -118,26 +118,16 @@ function getContainer(input) {
 /**
  * Updates orthgraphic camera given a width, height.
  *
- * @param {OrthographicCamera|undefined} camera - Camera to update
  * @param {number} width - Width of the viewport
  * @param {number} height - Height of the viewport
  * @param {number} near - Near plane
  * @param {number} far - Far plane
- * @returns {OrthographicCamera} Updated camera
+ * @returns {OrthographicCamera} Camera
  */
-function setCamera(camera, width, height, near = -1000, far = 1000) {
+function setCamera(width, height, near = -1000, far = 1000) {
   const left = width / -2;
   const top = height / 2;
-  if (camera === undefined) {
-    camera = new OrthographicCamera(left, -left, top, -top, near, far);
-  } else {
-    camera.left = left;
-    camera.right = -left;
-    camera.top = top;
-    camera.bottom = -top;
-    camera.updateProjectionMatrix();
-  }
-  return camera;
+  return new OrthographicCamera(left, -left, top, -top, near, far);
 }
 
 /**
@@ -300,7 +290,7 @@ export class WaveGradient {
       });
     }
 
-    this.camera = setCamera(this.camera, this.width, this.height);
+    this.camera = setCamera(this.width, this.height);
 
     /** @private */
     this.geometry = setGeometry(this.width, this.height, this.config.density);
@@ -406,7 +396,7 @@ export class WaveGradient {
     });
     this.scene.add(this.mesh);
 
-    setCamera(this.camera, this.width, this.height);
+    this.camera = setCamera(this.width, this.height);
     this.renderer.setSize(this.width, this.height, false);
     updateUniform(
       this.uniforms,
