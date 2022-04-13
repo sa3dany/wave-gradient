@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { WaveGradient } from "wave-gradients";
 import Controls from "../components/controls";
+import { GithubIcon } from "../components/icons";
 
 // ---------------------------------------------------------------------
 // Components
@@ -12,13 +13,35 @@ function Layout({ children }) {
   return <div className="relative mx-auto h-full px-5">{children}</div>;
 }
 
-function PageHeader({ children }) {
+// ---------------------------------------------------------------------
+// Page components
+// ---------------------------------------------------------------------
+
+function Layout({ children }) {
   return (
-    <header className="flex-auto self-stretch font-bold leading-none tracking-wider">
-      <h1 className="flex h-full max-w-fit select-none items-end rounded-b-3xl bg-gray-900 p-4 font-display text-3xl uppercase text-white dark:bg-gray-50 dark:text-black sm:p-6 sm:text-5xl">
-        {children}
-      </h1>
-    </header>
+    <div className="relative mx-auto h-full px-5">
+      <Head>
+        <title>Wave Gradients</title>
+      </Head>
+
+      {/* Navigation */}
+      <nav className="container relative z-10 mx-auto flex items-center justify-between pt-5 text-white mix-blend-overlay">
+        {/* Logo */}
+        <header className="select-none">
+          <h1 className="font-display text-3xl font-bold uppercase leading-none tracking-wider lg:text-4xl">
+            Wave Gradients
+          </h1>
+        </header>
+        {/* Github repo link */}
+        <a href="https://github.com/sa3dany/wave-gradients">
+          <span className="sr-only">GitHub repo</span>
+          <GithubIcon className="h-8 w-8 lg:h-10 lg:w-10" />
+        </a>
+      </nav>
+
+      {/* Page */}
+      {children}
+    </div>
   );
 }
 
