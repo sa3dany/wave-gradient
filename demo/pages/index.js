@@ -2,7 +2,6 @@ import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 
 import { WaveGradient } from "wave-gradients";
-import Controls from "../components/controls";
 import { GithubIcon } from "../components/icons";
 
 // ---------------------------------------------------------------------
@@ -101,32 +100,6 @@ export default function DemoPaage() {
     <Layout>
       <div className="absolute inset-0 overflow-hidden">
         <canvas ref={canvas} />
-      </div>
-
-      <div className="isolate items-end justify-between space-y-6 mix-blend-normal sm:flex sm:h-24 sm:space-y-0">
-        <PageHeader>
-          Wave Gradients
-          <Head>
-            <title>Wave Gradients</title>
-          </Head>
-        </PageHeader>
-
-        <Controls
-          useWireframe={() => [
-            wireframe,
-            () => {
-              setWireframe(!wireframe);
-              setTime(gradient.time);
-            },
-          ]}
-          usePlay={() => [
-            isPlaying,
-            () => {
-              setIsPlaying(!isPlaying);
-              setTime(gradient.time);
-            },
-          ]}
-        />
       </div>
     </Layout>
   );
