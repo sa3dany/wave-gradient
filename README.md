@@ -37,13 +37,10 @@ like me.
 - [x] Port code to three.js.
 - [x] Get the thee.js gradient working.
 - [x] Make the gradient to behave exaclty the same as the stripe gradient
-- [ ] Recreate the neccessary vertex and fragment shader from scratch
-      (excluding the external noise & blend functions which I will keep
-      and which are apropriatly attributed) so that I am not just coping
-      stripe's code.
-- [ ] Add control to add/edit colors, config, etc. for the gradient
+- [ ] Recreate the neccessary vertex and fragment shaders
+- [x] Add control to add/edit colors, config, etc. for the gradient
       instance.
-- [ ] Compare bundle size with the original stripe gradient.
+- [x] Compare bundle size with the original stripe gradient. (~130kb minified) 
 
 ## Credits
 
@@ -53,3 +50,4 @@ like me.
   for the de-minified code
 - Ashima Arts and Stefan Gustavson for the [Simplex noise functions](https://github.com/stegu/webgl-noise)
 - Jamie Owen for the GLSL shader [color blending function](https://github.com/jamieowen/glsl-blend)
+- [huemint](https://huemint.com) for the demo color palette generation
