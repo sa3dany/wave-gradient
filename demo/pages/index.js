@@ -1,6 +1,7 @@
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 
+import { WaveGradient } from "wave-gradients";
 import Controls from "../components/controls";
 
 // ---------------------------------------------------------------------
@@ -22,15 +23,10 @@ function PageHeader({ children }) {
 }
 
 // ---------------------------------------------------------------------
-// Page Componenst
+// Page
 // ---------------------------------------------------------------------
 
 export default function DemoPaage() {
-  const [waveGradient, setWaveGradient] = useState({
-    loaded: false,
-    Class: null,
-  });
-
   const [gradient, setGradient] = useState();
   const [time, setTime] = useState(Math.random() * 1000 * 60 * 60);
   const [isPlaying, setIsPlaying] = useState(true);
@@ -42,16 +38,13 @@ export default function DemoPaage() {
    * Load the wave gradient library
    */
   useEffect(() => {
-    import("wave-gradients").then(({ WaveGradient }) => {
-      setWaveGradient({ Class: WaveGradient });
-    });
   }, []);
 
   /**
    * Initialize the gradient
    */
   useEffect(() => {
-    if (!waveGradient.Class) {
+    if (false) {
       return;
     }
 
@@ -60,7 +53,7 @@ export default function DemoPaage() {
       delete window.__THREE__;
     }
 
-    const gradient = new waveGradient.Class(canvas.current, {
+    const gradient = new WaveGradient(canvas.current, {
       colors: ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"],
       density: [0.048, 0.12],
       time,
@@ -79,7 +72,7 @@ export default function DemoPaage() {
       window.removeEventListener("resize", resizeGradient);
       gradient.dispose();
     };
-  }, [waveGradient.Class, canvas, time, wireframe, isPlaying]);
+  }, [canvas, time, wireframe, isPlaying]);
 
   return (
     <Layout>
