@@ -354,8 +354,10 @@ export class WaveGradient {
      * @type {WebGLRenderer}
      */
     this.renderer = new WebGLRenderer({
-      canvas: this.domElement,
       antialias: true,
+      canvas: this.domElement,
+      powerPreference: "low-power",
+      stencil: false,
     });
 
     this.renderer.setSize(this.width, this.height, false);
