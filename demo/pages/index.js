@@ -61,15 +61,19 @@ export default function DemoPaage() {
    * Request a random color pallete
    */
   useEffect(() => {
-    fetch("http://colormind.io/api/", {
+    fetch("https://colormind.io/api/", {
       method: "POST",
       body: JSON.stringify({ model: "ui" }),
-    }).then((colorPalette) => {
-      colorPalette.json().then(({ result: colors }) => {
-        colors.pop();
-        setColors(colors.map(rgbToHex));
+    })
+      .then((colorPalette) => {
+        colorPalette.json().then(({ result: colors }) => {
+          colors.pop();
+          setColors(colors.map(rgbToHex));
+        });
+      })
+      .catch(() => {
+        setColors(["#ffbe0b", "#fb5607", "#ff006e", "#8338ec", "#3a86ff"]);
       });
-    });
   }, []);
 
   /**
