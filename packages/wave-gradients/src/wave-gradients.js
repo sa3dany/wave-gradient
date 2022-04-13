@@ -324,7 +324,8 @@ export class WaveGradient {
       canvas: this.domElement,
       antialias: true,
     });
-    this.renderer.setSize(this.width, this.height);
+
+    this.renderer.setSize(this.width, this.height, false);
     this.renderer.setClearAlpha(0);
 
     /** @private */
@@ -406,7 +407,7 @@ export class WaveGradient {
     this.scene.add(this.mesh);
 
     setCamera(this.camera, this.width, this.height);
-    this.renderer.setSize(this.width, this.height);
+    this.renderer.setSize(this.width, this.height, false);
     updateUniform(
       this.uniforms,
       "canvas",
