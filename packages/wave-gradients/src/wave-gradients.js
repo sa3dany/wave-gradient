@@ -190,6 +190,21 @@ function setMaterial(options = {}) {
 }
 
 /**
+ * Creates a mesh with the given geometry and material.
+ *
+ * @param {PlaneGeometry} geometry - three.js geometry
+ * @param {RawShaderMaterial} material - three.js material
+ * @param {object} options - mesh options
+ * @param {number} options.wireframe - wireframe rendering
+ * @returns {LineSegments|Mesh} Mesh or LineSegments
+ */
+function setMesh(geometry, material, options = {}) {
+  return options.wireframe
+    ? new LineSegments(geometry, material)
+    : new Mesh(geometry, material);
+}
+
+/**
  * Animates the gradient by adjusting the time value sent to the vertex
  * shader.
  *
@@ -384,9 +399,10 @@ export class WaveGradient {
     this.geometry.dispose();
     this.geometry = setGeometry(this.width, this.height, this.config.density);
 
-    const oldMesh = this.mesh;
-    this.mesh = new Mesh(this.geometry, this.material);
-    this.scene.remove(oldMesh);
+    this.scene.remove(this.mesh);
+    this.mesh = setMesh(this.geometry, this.material, {
+      wireframe: this.config.wireframe,
+    });
     this.scene.add(this.mesh);
 
     setCamera(this.camera, this.width, this.height);
