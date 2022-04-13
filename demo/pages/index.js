@@ -5,11 +5,11 @@ import { WaveGradient } from "wave-gradients";
 import { GithubIcon } from "../components/icons";
 
 // ---------------------------------------------------------------------
-// Components
+// Helpers
 // ---------------------------------------------------------------------
 
-function Layout({ children }) {
-  return <div className="relative mx-auto h-full px-5">{children}</div>;
+function rgbToHex(rgb) {
+  return `#${rgb.map((c) => `0${c.toString(16)}`.slice(-2)).join("")}`;
 }
 
 // ---------------------------------------------------------------------
@@ -50,23 +50,33 @@ function Layout({ children }) {
 
 export default function DemoPaage() {
   const [gradient, setGradient] = useState();
-  const [time, setTime] = useState(Math.random() * 1000 * 60 * 60);
+  const [time, setTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [wireframe, setWireframe] = useState(false);
+  const [colors, setColors] = useState();
 
   const canvas = useRef();
 
   /**
-   * Load the wave gradient library
+   * Request a random color pallete
    */
   useEffect(() => {
+    fetch("http://colormind.io/api/", {
+      method: "POST",
+      body: JSON.stringify({ model: "ui" }),
+    }).then((colorPalette) => {
+      colorPalette.json().then(({ result: colors }) => {
+        colors.pop();
+        setColors(colors.map(rgbToHex));
+      });
+    });
   }, []);
 
   /**
    * Initialize the gradient
    */
   useEffect(() => {
-    if (false) {
+    if (!colors) {
       return;
     }
 
@@ -76,7 +86,7 @@ export default function DemoPaage() {
     }
 
     const gradient = new WaveGradient(canvas.current, {
-      colors: ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"],
+      colors,
       density: [0.048, 0.12],
       time,
       wireframe,
@@ -94,7 +104,7 @@ export default function DemoPaage() {
       window.removeEventListener("resize", resizeGradient);
       gradient.dispose();
     };
-  }, [canvas, time, wireframe, isPlaying]);
+  }, [colors, canvas, time, wireframe, isPlaying]);
 
   return (
     <Layout>
