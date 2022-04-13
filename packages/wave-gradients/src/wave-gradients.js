@@ -68,8 +68,8 @@ const DEFAULTS = {
   colors: [0xef008f, 0x6ec3f4, 0x7038ff, 0xffba27],
   density: [0.06, 0.16],
   fps: 24,
-  frequency: [0.00014, 0.00029],
-  seed: 5,
+  seed: 0,
+  speed: 0.2,
   time: 0,
   wireframe: false,
 };
@@ -165,6 +165,63 @@ function setGeometry(width, height, density) {
 }
 
 /**
+ * Sets up the shader uniforms.
+ *
+ * @param {object} root0 - data dependencies
+ * @param {WaveGradientOptions} root0.config - gradient config
+ * @param {number} root0.width - viewport width
+ * @param {number} root0.height - viewport height
+ * @returns {object} Shader uniforms object
+ */
+function setUniforms({ config, width, height }) {
+  const f32 = (array) => new Float32Array(array);
+
+  const { colors, seed, speed, time } = config;
+
+  const uniforms = {
+    baseColor: new Color(colors[0]),
+    canvas: f32([width, height]),
+    realtime: time,
+    seed: seed,
+    speed: speed,
+    waveLayers: config.colors.slice(1).map((color, i, colors) => ({
+      isSet: true,
+      color: new Color(color),
+      noiseFreq: f32([3 + i / colors.length, 4 + i / colors.length]),
+      noiseSpeed: 11 + 0.3 * (i + 1),
+      noiseFlow: 6.5 + 0.3 * (i + 1),
+      noiseSeed: seed + 10 * (i + 1),
+      noiseFloor: 0.1,
+      noiseCeil: 0.53 + (0.26 / colors.length) * (i + 1),
+    })),
+  };
+
+  /**
+   * Pad the array with empty layers.
+   * Refer to the commet in the vertex shader for more details.
+   */
+  while (uniforms.waveLayers.length < 10) {
+    uniforms.waveLayers.push({
+      isSet: false,
+      color: f32([0, 0, 0]),
+      noiseFreq: new Float32Array([0, 0]),
+      noiseSpeed: 0,
+      noiseFlow: 0,
+      noiseSeed: 0,
+      noiseFloor: 0,
+      noiseCeil: 0,
+    });
+  }
+
+  // Convert to three.js expected format
+  for (const [name, value] of Object.entries(uniforms)) {
+    uniforms[name] = { value };
+  }
+
+  return uniforms;
+}
+
+/**
  * Creates a three.js material with the given uniforms and the imported
  * vertex and fragment shaders.
  *
@@ -209,7 +266,7 @@ function animate(now) {
   if (!shouldSkipFrame) {
     this.time += Math.min(now - this.state.lastFrameTime, frameTime);
     this.state.lastFrameTime = now;
-    this.uniforms["u_time"].value = this.time;
+    this.uniforms.realtime.value = this.time;
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -240,62 +297,17 @@ export class WaveGradient {
     /** @private */
     this.container = this.domElement.parentElement;
 
-    /** @private */
-    this.uniforms = {
-      resolution: { value: new Float32Array([this.width, this..height]) },
-      u_time: { value: this.config.time },
-      u_global: {
-        value: {
-          noiseFreq: new Float32Array(this.config.frequency),
-          noiseSpeed: 0.000005,
-        },
-      },
-      u_vertDeform: {
-        value: {
-          noiseFreq: new Float32Array([3, 4]),
-          noiseAmp: this.config.amplitude,
-          noiseSpeed: 10,
-          noiseFlow: 3,
-          noiseSeed: this.config.seed,
-        },
-      },
-      u_baseColor: { value: new Color(this.config.colors[0]) },
-      u_waveLayers: {
-        value: this.config.colors.slice(1).map((c, i, a) => ({
-          isSet: true,
-          color: new Color(c),
-          noiseFreq: new Float32Array([
-            3 + i / this.config.colors.length,
-            4 + i / this.config.colors.length,
-          ]),
-          noiseSpeed: 11 + 0.3 * (i + 1),
-          noiseFlow: 6.5 + 0.3 * (i + 1),
-          noiseSeed: this.config.seed + 10 * (i + 1),
-          noiseFloor: 0.1,
-          noiseCeil: 0.63 + 0.07 * (i + 1),
-        })),
-      },
-    };
-
-    while (this.uniforms["u_waveLayers"].value.length < 10) {
-      this.uniforms["u_waveLayers"].value.push({
-        isSet: false,
-        color: new Color(0),
-        noiseFreq: new Float32Array([0, 0]),
-        noiseSpeed: 0,
-        noiseFlow: 0,
-        noiseSeed: 0,
-        noiseFloor: 0,
-        noiseCeil: 0,
-      });
-    }
-
     this.camera = setCamera(this.width, this.height);
 
     /** @private */
     this.geometry = setGeometry(this.width, this.height, this.config.density);
 
     /** @private */
+    this.uniforms = setUniforms({
+      config: this.config,
+      width: this.width,
+      height: this.height,
+    });
 
     /** @private */
     this.material = setMaterial({ uniforms: this.uniforms });
@@ -398,11 +410,7 @@ export class WaveGradient {
 
     this.camera = setCamera(this.width, this.height);
     this.renderer.setSize(this.width, this.height, false);
-    updateUniform(
-      this.uniforms,
-      "canvas",
-      new Float32Array([this.width, this.height])
-    );
+    this.uniforms.canvas.value = new Float32Array([this.width, this.height]);
 
     if (!this.state.playing) {
       // If the gradient is paused, render a frame on resize anyway to
