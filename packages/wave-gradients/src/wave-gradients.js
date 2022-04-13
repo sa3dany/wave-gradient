@@ -445,11 +445,13 @@ export class WaveGradient {
     this.renderer.setSize(this.width, this.height, false);
     this.uniforms.canvas.value = new Float32Array([this.width, this.height]);
 
-    if (!this.state.playing) {
-      // If the gradient is paused, render a frame on resize anyway to
-      // refresh the canvas
-      this.renderer.render(this.scene, this.camera);
-    }
+    requestAnimationFrame(() => {
+      if (!this.state.playing) {
+        // If the gradient is paused, render a frame on resize anyway to
+        // refresh the canvas
+        this.renderer.render(this.scene, this.camera);
+      }
+    });
 
     return this;
   }
