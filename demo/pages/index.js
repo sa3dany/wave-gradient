@@ -1,3 +1,4 @@
+import { debounce } from "lodash-es";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 
@@ -71,9 +72,13 @@ export default function DemoPaage() {
     setGradient(gradient);
     isPlaying && gradient.play();
 
-    function resizeGradient() {
-      gradient.resize();
-    }
+    const resizeGradient = debounce(
+      () => {
+        gradient.resize();
+      },
+      128,
+      { trailing: true }
+    );
     window.addEventListener("resize", resizeGradient);
 
     return () => {
