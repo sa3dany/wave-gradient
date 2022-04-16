@@ -23,6 +23,7 @@
     "three": "^0.139.0"
   },
   "devDependencies": {
+    "clang-format": "^1.7.0",
     "esbuild": "^0.14.34",
     "esbuild-plugin-glsl-include": "^0.0.5",
     "eslint-plugin-jsdoc": "^39.2.0"
