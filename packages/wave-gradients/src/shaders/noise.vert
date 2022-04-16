@@ -5,7 +5,7 @@
 // This has no effect on runtime, it is here simply because it is
 // required by the GLSL linter I am using in order to support `#include`
 // macros
-#extension GL_GOOGLE_include_directive: enable
+#extension GL_GOOGLE_include_directive : enable
 
 #include "includes/blend.glsl"
 #include "includes/noise.glsl"
@@ -67,9 +67,9 @@ float clampNoise(float noise, vec2 uv) {
   return max(0.0, noise);
 }
 
-// Wrapper around the psrdnoise function to avoid passing in the unused
+// Wrapper for the 3D psrdnoise function to avoid passing in the unused
 // parameters
-float getNoise(vec3 position, float alpha) {
+float noise3D(vec3 position, float alpha) {
   vec3 gradient;
   vec3 period = vec3(0.0);
   return psrdnoise(position, period, alpha, gradient);
@@ -79,7 +79,7 @@ float getNoise(vec3 position, float alpha) {
 // Output variables -> fragment shader stage
 // ---------------------------------------------------------------------
 
-varying vec3 color;
+varying vec3 out_Color;
 
 // ---------------------------------------------------------------------
 // Main
@@ -96,27 +96,30 @@ void main() {
   // scale down realtime to a resonable value for animating the noise
   float time = (realtime / 10e3) * speed;
 
+  // Vertex displacement -----------------------------------------------
+
   // Choose an amplitude based on the canvas height but with limits
   float amplitude = min(canvas.y * 0.66, 250.0);
 
   // Scale the vertical frequency to the canvas height, while the
   // horizontal frequency is based on a minimum canvas size of 375px
   // (iPhone SE)
-  vec2 frequency = vec2(
-    0.4 / 375.0,
-    3.0 / canvas.y
-  );
+  vec2 frequency = vec2(0.3 / 375.0, 3.0 / canvas.y);
 
-  float noise = getNoise(
+  float noise = noise3D(
     vec3(
       position.x * frequency.x + time,
       position.y + time,
       position.z * frequency.y + time + seed),
-    time * 2.0
-  ) * amplitude;
+    time * 2.0);
+
+  noise *= amplitude;
   noise = clampNoise(noise, uv);
   noise += orthographicTilt(uv, canvas);
+
+  // Final vertex position
   vec3 newPosition = position + (normal * noise);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
 
   // Calculate the color of the vertex
   vec2 noiseCoord = canvas * uv * vec2(0.00014, 0.00029);
@@ -141,5 +144,5 @@ void main() {
     color = blendNormal(color, layer.color, pow(noise, 4.0));
   }
 
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+  // Varying varaibles are sent to the next stage --> fragment shader
 }

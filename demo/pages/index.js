@@ -1,7 +1,6 @@
 import { debounce } from "lodash-es";
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
-
 import { WaveGradient } from "wave-gradients";
 import { GithubIcon } from "../components/icons";
 import { usePalette } from "../lib/huemint";

@@ -7,7 +7,7 @@ vec4 permute(vec4 i) {
   return mod(((im * 34.0) + 10.0) * im, 289.0);
 }
 
-float psrdnoise(vec3 x, vec3 period, float alpha, out vec3 gradient) {
+float psrdnoise3D(vec3 x, vec3 period, float alpha, out vec3 gradient) {
   const mat3 M = mat3(0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0);
   const mat3 Mi = mat3(-0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5);
   vec3 uvw = M * x;
