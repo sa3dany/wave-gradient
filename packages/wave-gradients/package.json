@@ -15,7 +15,7 @@
     "directory": "packages/wave-gradients"
   },
   "scripts": {
-    "build": "node scripts/esbuild.js",
+    "build": "node scripts/esbuild.js && tsc",
     "dev": "node scripts/esbuild.js --watch",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },

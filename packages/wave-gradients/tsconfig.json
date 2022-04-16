@@ -1,0 +1,8 @@
+{
+  "include": ["dist/wave-gradients.js"],
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "allowJs": true
+  }
+}
