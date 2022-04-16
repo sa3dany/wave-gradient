@@ -21,7 +21,7 @@ const adjacencyMatrix = [
 
 /**
  * @see https://huemint.com/about
- * @returns {Promise<object>}
+ * @returns {Promise<Response>}
  */
 export function getPalettes() {
   return fetch("https://api.huemint.com/color", {
@@ -48,7 +48,7 @@ export function getPalettes() {
 const DEFAULT_COLORS = ["#ffffff", "#fe30f8", "#dca6ca", "#58bcfe"];
 
 /**
- * Custom hooks for use in react componenets.
+ * Custom hook for use in react componenets.
  *
  * @returns {object}
  */
@@ -82,11 +82,18 @@ export function usePalette() {
       setColors(DEFAULT_COLORS);
       getPalettes()
         .then((res) => {
-          res.json().then(({ results }) => {
-            setCache(results.map((p) => p.palette));
-          });
+          if (res.ok) {
+            return res.json();
+          } else {
+            throw new Error("Failed to fetch colors");
+          }
         })
-        .catch(() => {});
+        .then(({ results }) => {
+          setCache(results.map((p) => p.palette));
+        })
+        .catch(() => {
+          // It's okay if the API is down.
+        });
     }
   }, []);
 
