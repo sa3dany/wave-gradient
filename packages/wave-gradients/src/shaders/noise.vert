@@ -87,7 +87,7 @@ float noise2D(vec2 position, float alpha) {
 // Output variables -> fragment shader stage
 // ---------------------------------------------------------------------
 
-varying vec3 out_Color;
+varying vec3 shared_Color;
 
 // ---------------------------------------------------------------------
 // Main
@@ -132,7 +132,7 @@ void main() {
   // Vertex color ------------------------------------------------------
 
   // Initialize vertex color with 1st base color (layer 0)
-  out_Color = baseColor;
+  shared_Color = baseColor;
 
   // Loop though the color layers and belnd whith the previous layer
   // color with an alpha value based on the noise function
@@ -156,7 +156,7 @@ void main() {
 
     noise = smoothstep(layer.noiseFloor, layer.noiseCeil, noise);
 
-    out_Color = blendNormal(out_Color, layer.color, pow(noise, 4.0));
+    shared_Color = blendNormal(shared_Color, layer.color, pow(noise, 4.0));
   }
 
   // Varying varaibles are sent to the next stage --> fragment shader
