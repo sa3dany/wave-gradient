@@ -72,7 +72,15 @@ float clampNoise(float noise, vec2 uv) {
 float noise3D(vec3 position, float alpha) {
   vec3 gradient;
   vec3 period = vec3(0.0);
-  return psrdnoise(position, period, alpha, gradient);
+  return psrdnoise3D(position, period, alpha, gradient);
+}
+
+// Wrapper for the 2D psrdnoise function to avoid passing in the unused
+// parameters
+float noise2D(vec2 position, float alpha) {
+  vec2 gradient;
+  vec2 period = vec2(0.0);
+  return psrdnoise2D(position, period, alpha, gradient);
 }
 
 // ---------------------------------------------------------------------
@@ -121,27 +129,34 @@ void main() {
   vec3 newPosition = position + (normal * noise);
   gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
 
-  // Calculate the color of the vertex
-  vec2 noiseCoord = canvas * uv * vec2(0.00014, 0.00029);
-  float colorTime = realtime * 4e-6;
-  color = baseColor;
+  // Vertex color ------------------------------------------------------
+
+  // Initialize vertex color with 1st base color (layer 0)
+  out_Color = baseColor;
+
+  // Loop though the color layers and belnd whith the previous layer
+  // color with an alpha value based on the noise function
   for (int i = 0; i < MAX_COLOR_LAYERS; i++) {
+
+    WaveLayers layer = waveLayers[i];
+
     // Break from loop on the first undefinde wave layer
     if (!waveLayers[i].isSet) {
       break;
     }
-    WaveLayers layer = waveLayers[i];
-    float noise = smoothstep(
-      layer.noiseFloor,
-      layer.noiseCeil,
-      getNoise(
-        vec3(
-          noiseCoord.x * layer.noiseFreq.x + colorTime * layer.noiseFlow,
-          noiseCoord.y * layer.noiseFreq.y,
-          colorTime * layer.noiseSpeed + layer.noiseSeed),
-        colorTime * layer.noiseFlow
-      ) / 2.0 + 0.5);
-    color = blendNormal(color, layer.color, pow(noise, 4.0));
+
+    float noise = noise2D(
+      vec2(
+        position.x * layer.noiseFreq.x + time * layer.noiseFlow,
+        position.z * layer.noiseFreq.y + time + layer.noiseSeed),
+      time * layer.noiseSpeed);
+
+    // Normalize the noise value between 0.0 and 1.0
+    noise = noise / 2.0 + 0.5;
+
+    noise = smoothstep(layer.noiseFloor, layer.noiseCeil, noise);
+
+    out_Color = blendNormal(out_Color, layer.color, pow(noise, 4.0));
   }
 
   // Varying varaibles are sent to the next stage --> fragment shader
