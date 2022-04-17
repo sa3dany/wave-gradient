@@ -182,6 +182,7 @@ function setUniforms({ config, width, height }) {
     baseColor: new Color(colors[0]),
     canvas: f32([width, height]),
     realtime: time,
+    amplitude: 320,
     seed: seed,
     speed: speed,
     waveLayers: config.colors.slice(1).map((color, i, colors) => ({

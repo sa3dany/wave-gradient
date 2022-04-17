@@ -21,6 +21,7 @@ uniform mat4 projectionMatrix;
 // custom
 uniform vec2 canvas;
 uniform float realtime;
+uniform float amplitude;
 uniform float speed;
 uniform float seed;
 
@@ -93,21 +94,12 @@ varying vec3 shared_Color;
 // Main
 // ---------------------------------------------------------------------
 
-// For reference, the original values from stripe's shader:
-// - Global
-//     Freq: [0.00014, 0.00029] | Speed: 4e-6
-// - Deforms
-//     Freq: [3, 4] | Amp: 320 | Speed: 10 | Flow: 3
-
 void main() {
 
   // scale down realtime to a resonable value for animating the noise
   float time = (realtime / 10e3) * speed;
 
   // Vertex displacement -----------------------------------------------
-
-  // Choose an amplitude based on the canvas height but with limits
-  float amplitude = min(canvas.y * 0.66, 250.0);
 
   // Scale the vertical frequency to the canvas height, while the
   // horizontal frequency is based on a minimum canvas size of 375px
