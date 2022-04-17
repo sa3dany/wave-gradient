@@ -68,22 +68,6 @@ float clampNoise(float noise, vec2 uv) {
   return max(0.0, noise);
 }
 
-// Wrapper for the 3D psrdnoise function to avoid passing in the unused
-// parameters
-float noise3D(vec3 position, float alpha) {
-  vec3 gradient;
-  vec3 period = vec3(0.0);
-  return psrdnoise3D(position, period, alpha, gradient);
-}
-
-// Wrapper for the 2D psrdnoise function to avoid passing in the unused
-// parameters
-float noise2D(vec2 position, float alpha) {
-  vec2 gradient;
-  vec2 period = vec2(0.0);
-  return psrdnoise2D(position, period, alpha, gradient);
-}
-
 // ---------------------------------------------------------------------
 // Output variables -> fragment shader stage
 // ---------------------------------------------------------------------
@@ -106,12 +90,10 @@ void main() {
   // (iPhone SE)
   vec2 frequency = vec2(0.3 / 375.0, 3.0 / canvas.y);
 
-  float noise = noise3D(
-    vec3(
-      position.x * frequency.x + time,
-      position.y + time,
-      position.z * frequency.y + time + seed),
-    time * 2.0);
+  float noise = snoise(vec3(
+    position.x * frequency.x + time,
+    position.y + time,
+    position.z * frequency.y + time + seed));
 
   noise *= amplitude;
   noise = clampNoise(noise, uv);
@@ -137,11 +119,10 @@ void main() {
       break;
     }
 
-    float noise = noise2D(
-      vec2(
-        position.x * layer.noiseFreq.x + time * layer.noiseFlow,
-        position.z * layer.noiseFreq.y + time + layer.noiseSeed),
-      time * layer.noiseSpeed);
+    float noise = snoise(vec3(
+      position.x * layer.noiseFreq.x + time * layer.noiseFlow,
+      position.y + time,
+      position.z * layer.noiseFreq.y + time + layer.noiseSeed));
 
     // Normalize the noise value between 0.0 and 1.0
     noise = noise / 2.0 + 0.5;
