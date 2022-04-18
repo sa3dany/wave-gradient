@@ -85,10 +85,7 @@ void main() {
 
   // Vertex displacement -----------------------------------------------
 
-  // Scale the vertical frequency to the canvas height, while the
-  // horizontal frequency is based on a minimum canvas size of 375px
-  // (iPhone SE)
-  vec2 frequency = vec2(0.3 / 375.0, 3.0 / canvas.y);
+  vec2 frequency = vec2(3, 4);
 
   float noise = snoise(vec3(
     position.x * frequency.x + time,
