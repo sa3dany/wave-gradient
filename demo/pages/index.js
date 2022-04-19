@@ -16,7 +16,7 @@ export default function DemoPage() {
 
   return (
     <Layout>
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 -z-10">
         <WaveGradientsReact
           colors={colors}
           density={[0.048, 0.12]}
