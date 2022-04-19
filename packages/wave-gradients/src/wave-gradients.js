@@ -178,25 +178,49 @@ function setUniforms({ config, width, height }) {
 
   const { colors, seed, speed, time } = config;
 
+  /**
+   * For reference, the original stripe gradient preset values were:
+   *
+   * time:                   1253106
+   * shadow_power:           6 {canvas.y < 600 ? 5 : 6}
+   * global.noiseSpeed:      5e-6
+   * global.noiseFreq:      [14e-5, 29e-5]
+   * vertDeform.noiseFreq:  [3, 4]
+   * vertDeform.noiseSpeed:  10
+   * vertDeform.noiseFlow:   3
+   * vertDeform.noiseSeed:   5
+   * vertDeform.noiseAmp:    320
+   *
+   * for (i = 1; i < sectionColors.length; i++):
+   *   color:      sectionColors[i]
+   *   noiseFloor: 0.1,
+   *   noiseCeil:  0.63 + (0.07 * i),
+   *   noiseSpeed: 11 + (0.3 * i),
+   *   noiseFlow:  6.5 + (0.3 * i),
+   *   noiseSeed:  seed + (10 * i),
+   *   noiseFreq: [2 + (i / sectionColors.length),
+   *               3 + (i / sectionColors.length)]
+   */
   const uniforms = {
     baseColor: new Color(colors[0]),
-    canvas: f32([width, height]),
+    resolution: f32([width, height]),
     realtime: time,
     amplitude: 320,
     seed: seed,
     speed: speed,
+    shadowPower: 6,
     waveLayers: config.colors.slice(1).map((color, i, colors) => ({
       isSet: true,
       color: new Color(color),
       noiseFreq: f32([
-        (2 + (i + 1) / colors.length) / 4e3,
-        (3 + (i + 1) / colors.length) / 4e3,
+        2 + (i + 1) / colors.length,
+        3 + (i + 1) / colors.length,
       ]),
-      noiseFlow: 1.3 + 0.3 * (i + 1),
-      noiseSpeed: 2.5 + 0.3 * (i + 1),
+      noiseFlow: 6.5 + 0.3 * (i + 1),
+      noiseSpeed: 11 + 0.3 * (i + 1),
       noiseSeed: seed + 10 * (i + 1),
       noiseFloor: 0.1,
-      noiseCeil: 0.63 + (0.21 / colors.length) * (i + 1),
+      noiseCeil: 0.63 + 0.07 * (i + 1),
     })),
   };
 
@@ -447,7 +471,10 @@ export class WaveGradient {
     this.scene.add(this.mesh);
     this.camera = setCamera(this.width, this.height);
     this.renderer.setSize(this.width, this.height, false);
-    this.uniforms.canvas.value = new Float32Array([this.width, this.height]);
+    this.uniforms.resolution.value = new Float32Array([
+      this.width,
+      this.height,
+    ]);
 
     if (!this.state.playing) {
       // If the gradient is paused, render a frame on resize anyway to

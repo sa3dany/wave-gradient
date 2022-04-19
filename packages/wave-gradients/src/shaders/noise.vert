@@ -8,7 +8,7 @@
 #extension GL_GOOGLE_include_directive : enable
 
 #include "includes/blend.glsl"
-#include "includes/noise.glsl"
+#include "includes/snoise.glsl"
 
 // ---------------------------------------------------------------------
 // Uniforms
@@ -19,7 +19,7 @@ uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 
 // custom
-uniform vec2 canvas;
+uniform vec2 resolution;
 uniform float realtime;
 uniform float amplitude;
 uniform float speed;
@@ -81,20 +81,19 @@ varying vec3 shared_Color;
 void main() {
 
   // scale down realtime to a resonable value for animating the noise
-  float time = (realtime / 10e3) * speed;
+  float time = realtime * 5e-6;
 
   // Vertex displacement -----------------------------------------------
 
-  vec2 frequency = vec2(3, 4);
+  vec2 frequency = vec2(14e-5, 29e-5);
+  vec2 noiseCoord = resolution * uv * frequency;
 
   float noise = snoise(vec3(
-    position.x * frequency.x + time,
-    position.y + time,
-    position.z * frequency.y + time + seed));
+    noiseCoord.x * 3.0 + time * 3.0, noiseCoord.y * 4.0, time * 10.0 + seed));
 
-  noise *= amplitude;
+  noise *= 320.0;
   noise = clampNoise(noise, uv);
-  noise += orthographicTilt(uv, canvas);
+  noise += orthographicTilt(uv, resolution);
 
   // Final vertex position
   vec3 newPosition = position + (normal * noise);
@@ -117,9 +116,9 @@ void main() {
     }
 
     float noise = snoise(vec3(
-      position.x * layer.noiseFreq.x + time * layer.noiseFlow,
-      position.y + time,
-      position.z * layer.noiseFreq.y + time + layer.noiseSeed));
+      noiseCoord.x * layer.noiseFreq.x + time * layer.noiseFlow,
+      noiseCoord.y * layer.noiseFreq.y,
+      time * layer.noiseSpeed + layer.noiseSeed));
 
     // Normalize the noise value between 0.0 and 1.0
     noise = noise / 2.0 + 0.5;
