@@ -18,7 +18,7 @@ export default function DemoPage() {
     <Layout>
       <div className="absolute inset-0 overflow-hidden">
         <WaveGradientsReact
-          colors={["#a960ee", "#ff333d", "#90e0ff", "#ffcb57"]}
+          colors={colors}
           density={[0.048, 0.12]}
           paused={false}
           seed={Math.random() * 100}
