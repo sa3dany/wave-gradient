@@ -1,11 +1,20 @@
 // ---------------------------------------------------------------------
-// Includes
+//
+// Vertex shader stage for the wave gradients. This is the same as the
+// originalvertex shader used on stripe.com for their gradients. I've
+// added more commments for clarity and refactored a few parts into
+// functions.
+//
 // ---------------------------------------------------------------------
 
 // This has no effect on runtime, it is here simply because it is
 // required by the GLSL linter I am using in order to support `#include`
 // macros
 #extension GL_GOOGLE_include_directive : enable
+
+// ---------------------------------------------------------------------
+// Includes
+// ---------------------------------------------------------------------
 
 #include "includes/blend.glsl"
 #include "includes/snoise.glsl"
@@ -75,7 +84,7 @@ float clampNoise(float noise, vec2 uv) {
 varying vec3 shared_Color;
 
 // ---------------------------------------------------------------------
-// Main
+// Vertex shader entry point
 // ---------------------------------------------------------------------
 
 void main() {
@@ -95,13 +104,15 @@ void main() {
   noise = clampNoise(noise, uv);
   noise += orthographicTilt(uv, resolution);
 
-  // Final vertex position
+  // Final vertex position. variables starting with `gl_` are built-in
+  // to WebGL. The `gl_Position` variable is the output of the vertex
+  // shader stage and sets the position of each vertex.
   vec3 newPosition = position + (normal * noise);
   gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
 
   // Vertex color ------------------------------------------------------
 
-  // Initialize vertex color with 1st base color (layer 0)
+  // Initialize vertex color with 1st layer color
   shared_Color = baseColor;
 
   // Loop though the color layers and belnd whith the previous layer
@@ -127,6 +138,8 @@ void main() {
 
     shared_Color = blendNormal(shared_Color, layer.color, pow(noise, 4.0));
   }
-
-  // Varying varaibles are sent to the next stage --> fragment shader
 }
+
+// ---------------------------------------------------------------------
+// Varying are passed to the next stage, the fragment shader
+// ---------------------------------------------------------------------

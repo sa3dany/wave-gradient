@@ -1,6 +1,6 @@
-// psrdnoise 2021-12-02 (c) Stefan Gustavson and Ian McEwan
-// Published under the MIT license
-// https://github.com/stegu/psrdnoise
+// psrdnoise (c) Stefan Gustavson and Ian McEwan,
+// ver. 2021-12-02, published under the MIT license:
+// https://github.com/stegu/psrdnoise/
 
 vec4 permute(vec4 i) {
   vec4 im = mod(i, 289.0);
