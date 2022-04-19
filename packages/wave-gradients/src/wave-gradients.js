@@ -69,7 +69,7 @@ const DEFAULTS = {
   density: [0.06, 0.16],
   fps: 24,
   seed: 0,
-  speed: 0.2,
+  speed: 1,
   time: 0,
   wireframe: false,
 };
