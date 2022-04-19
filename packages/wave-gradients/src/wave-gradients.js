@@ -289,10 +289,12 @@ function setMesh(geometry, material, options = {}) {
  */
 function animate(now) {
   const frameTime = 1000 / this.config.fps;
+  const timeIncrement = now - this.state.lastFrameTime;
   const shouldSkipFrame = now - this.state.lastFrameTime < frameTime;
 
   if (!shouldSkipFrame) {
-    this.time += Math.min(now - this.state.lastFrameTime, frameTime);
+    // Scale the time increment based on the speed set in config
+    this.time += Math.min(timeIncrement, frameTime) * this.config.speed;
     this.state.lastFrameTime = now;
     this.uniforms.realtime.value = this.time;
     this.renderer.render(this.scene, this.camera);
