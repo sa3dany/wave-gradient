@@ -277,6 +277,15 @@ function createMesh(geometry, material, options = {}) {
 }
 
 /**
+ * Renders a frame.
+ *
+ * @this {WaveGradient}
+ */
+function render() {
+  this.renderer.render(this.scene, this.camera);
+}
+
+/**
  * Animates the gradient by adjusting the time value sent to the vertex
  * shader.
  *
@@ -408,7 +417,7 @@ export class WaveGradient {
     this.time = this.config.time;
 
     // Render one frame on init
-    requestAnimationFrame(animate.bind(this));
+    requestAnimationFrame(render.bind(this));
   }
 
   /**
@@ -486,7 +495,7 @@ export class WaveGradient {
     if (!this.state.playing) {
       // If the gradient is paused, render a frame on resize anyway to
       // refresh the canvas
-      requestAnimationFrame(animate.bind(this));
+      requestAnimationFrame(render.bind(this));
     }
 
     return this;
