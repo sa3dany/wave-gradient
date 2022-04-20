@@ -191,13 +191,13 @@ function setUniforms({ config, width, height }) {
    *
    * for (i = 1; i < sectionColors.length; i++):
    *   color:      sectionColors[i]
-   *   noiseFloor: 0.1,
    *   noiseCeil:  0.63 + (0.07 * i),
-   *   noiseSpeed: 11 + (0.3 * i),
+   *   noiseFloor: 0.1,
    *   noiseFlow:  6.5 + (0.3 * i),
-   *   noiseSeed:  seed + (10 * i),
    *   noiseFreq: [2 + (i / sectionColors.length),
    *               3 + (i / sectionColors.length)]
+   *   noiseSeed:  seed + (10 * i),
+   *   noiseSpeed: 11 + (0.3 * i),
    */
   const uniforms = {
     baseColor: new Color(colors[0]),
@@ -208,17 +208,17 @@ function setUniforms({ config, width, height }) {
     speed: speed,
     shadowPower: 6,
     waveLayers: config.colors.slice(1).map((color, i, colors) => ({
-      isSet: true,
       color: new Color(color),
+      isSet: true,
+      noiseCeil: 0.63 + 0.07 * (i + 1),
+      noiseFloor: 0.1,
+      noiseFlow: 6.5 + 0.3 * (i + 1),
       noiseFreq: f32([
         2 + (i + 1) / colors.length,
         3 + (i + 1) / colors.length,
       ]),
-      noiseFlow: 6.5 + 0.3 * (i + 1),
-      noiseSpeed: 11 + 0.3 * (i + 1),
       noiseSeed: seed + 10 * (i + 1),
-      noiseFloor: 0.1,
-      noiseCeil: 0.63 + 0.07 * (i + 1),
+      noiseSpeed: 11 + 0.3 * (i + 1),
     })),
   };
 
