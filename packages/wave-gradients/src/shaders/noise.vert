@@ -23,12 +23,16 @@
 // Uniforms
 // ---------------------------------------------------------------------
 
-// three.js
+// three.js ------------------------------------------------------------
+
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 
-// custom
-uniform vec2 resolution;
+// custom --------------------------------------------------------------
+
+// to match precision in fragment shader, `mediump` is used here.
+uniform mediump vec2 resolution;
+
 uniform float realtime;
 uniform float amplitude;
 uniform float speed;

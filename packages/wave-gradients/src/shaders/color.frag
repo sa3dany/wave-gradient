@@ -6,30 +6,34 @@
 //
 // ---------------------------------------------------------------------
 
+// Use atleast `mediump` to avoid color banding in the color noise. see:
+// https://webgl2fundamentals.org/webgl/lessons/webgl-precision-issues.html
+precision mediump float;
+
 // ---------------------------------------------------------------------
 // Uniforms
 // ---------------------------------------------------------------------
 
-uniform highp vec2 resolution;
-uniform mediump float shadowPower;
+uniform vec2 resolution;
+uniform float shadowPower;
 
 // ---------------------------------------------------------------------
 // Input variables
 // ---------------------------------------------------------------------
 
-varying lowp vec3 shared_Color;
+varying vec3 shared_Color;
 
 // ---------------------------------------------------------------------
 // Fragment shader entry point
 // ---------------------------------------------------------------------
 
 void main() {
-  lowp vec3 color = shared_Color;
+  vec3 color = shared_Color;
 
   // Normalize the fragment pixel coordinates between 0.0 - 1.0 st is a
   // reference to the st swizzle mask which is usually used for texture
   // coordinates in shaders
-  mediump vec2 st = gl_FragCoord.xy / resolution.xy;
+  vec2 st = gl_FragCoord.xy / resolution.xy;
 
   // In the original shader, this processing section was only enabled
   // based on an attribute value which was set to `true` if the HTML
