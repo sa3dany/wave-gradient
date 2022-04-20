@@ -1,6 +1,5 @@
 /**
- * @fileOverview Demo ppage showcasing the wave gradients.
- * @author Mohamed ElSaadany
+ * Demo ppage showcasing the wave gradients.
  */
 
 import WaveGradientsReact from "../components/gradient";

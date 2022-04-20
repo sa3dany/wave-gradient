@@ -1,6 +1,5 @@
 /**
- * @fileoverview React component for the wave gradients.
- * @author Mohamed ElSaadany
+ * React component for the wave gradients.
  */
 
 import { debounce } from "lodash-es";

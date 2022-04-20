@@ -1,7 +1,5 @@
 /**
  * @file Wave Gradients main class
- * @author Mohamed ElSaadany
- * @module wave-gradients
  */
 
 // ---------------------------------------------------------------------
