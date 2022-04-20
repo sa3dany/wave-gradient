@@ -20,7 +20,7 @@ import {
 
 /**
  * Import the two shader stages: vertex and fragment. These are imported
- * using a custom rollup plugin to read these files as strings
+ * using a custom bundler plugin to read these files as strings
  */
 import vertexShader from "./shaders/noise.vert";
 import fragmentShader from "./shaders/color.frag";
@@ -57,7 +57,6 @@ import fragmentShader from "./shaders/color.frag";
 /**
  * Default options.
  *
- * @constant
  * @default
  * @type {WaveGradientOptions}
  */
@@ -104,7 +103,7 @@ function getOptions(options) {
  * @throws if no canvas element found
  * @returns {HTMLCanvasElement} Canvas element
  */
-function getContainer(input) {
+function getCanvas(input) {
   const element =
     typeof input === "string" ? document.querySelector(input) : input;
   if (!element || element.tagName !== "CANVAS") {
@@ -122,7 +121,7 @@ function getContainer(input) {
  * @param {number} far - Far plane
  * @returns {OrthographicCamera} Camera
  */
-function setCamera(width, height, near = -1000, far = 1000) {
+function createCamera(width, height, near = -1000, far = 1000) {
   const left = width / -2;
   const top = height / 2;
   return new OrthographicCamera(left, -left, top, -top, near, far);
@@ -136,7 +135,7 @@ function setCamera(width, height, near = -1000, far = 1000) {
  * @param {number[]} density - Level of detail of the plane geometry
  * @returns {PlaneGeometry} three.js plane geometry
  */
-function setGeometry(width, height, density) {
+function createGeometry(width, height, density) {
   const gridX = Math.ceil(density[0] * width);
   const gridY = Math.ceil(density[1] * height);
   const geometry = new PlaneGeometry(width, height, gridX, gridY);
@@ -171,7 +170,7 @@ function setGeometry(width, height, density) {
  * @param {number} root0.height - viewport height
  * @returns {object} Shader uniforms object
  */
-function setUniforms({ config, width, height }) {
+function createUniforms({ config, width, height }) {
   const f32 = (array) => new Float32Array(array);
 
   const { colors, seed, speed, time } = config;
@@ -254,7 +253,7 @@ function setUniforms({ config, width, height }) {
  * @param {object} options - material options
  * @returns {RawShaderMaterial} three.js shader material
  */
-function setMaterial(options = {}) {
+function createMaterial(options = {}) {
   return new RawShaderMaterial({
     uniforms: options.uniforms,
     vertexShader,
@@ -271,7 +270,7 @@ function setMaterial(options = {}) {
  * @param {number} options.wireframe - wireframe rendering
  * @returns {LineSegments|Mesh} Mesh or LineSegments
  */
-function setMesh(geometry, material, options = {}) {
+function createMesh(geometry, material, options = {}) {
   return options.wireframe
     ? new LineSegments(geometry, material)
     : new Mesh(geometry, material);
@@ -326,7 +325,7 @@ export class WaveGradient {
      * @private
      * @type {HTMLCanvasElement}
      */
-    this.domElement = getContainer(element);
+    this.domElement = getCanvas(element);
 
     /**
      * @private
@@ -338,19 +337,23 @@ export class WaveGradient {
      * @private
      * @type {OrthographicCamera}
      */
-    this.camera = setCamera(this.width, this.height);
+    this.camera = createCamera(this.width, this.height);
 
     /**
      * @private
      * @type {PlaneGeometry}
      */
-    this.geometry = setGeometry(this.width, this.height, this.config.density);
+    this.geometry = createGeometry(
+      this.width,
+      this.height,
+      this.config.density
+    );
 
     /**
      * @private
      * @type {object}
      */
-    this.uniforms = setUniforms({
+    this.uniforms = createUniforms({
       config: this.config,
       width: this.width,
       height: this.height,
@@ -360,13 +363,13 @@ export class WaveGradient {
      * @private
      * @type {RawShaderMaterial}
      */
-    this.material = setMaterial({ uniforms: this.uniforms });
+    this.material = createMaterial({ uniforms: this.uniforms });
 
     /**
      * @private
      * @type {LineSegments|Mesh}
      */
-    this.mesh = setMesh(this.geometry, this.material, {
+    this.mesh = createMesh(this.geometry, this.material, {
       wireframe: this.config.wireframe,
     });
 
@@ -463,13 +466,17 @@ export class WaveGradient {
     this.scene.remove(this.mesh);
     this.geometry.dispose();
 
-    this.geometry = setGeometry(this.width, this.height, this.config.density);
-    this.mesh = setMesh(this.geometry, this.material, {
+    this.geometry = createGeometry(
+      this.width,
+      this.height,
+      this.config.density
+    );
+    this.mesh = createMesh(this.geometry, this.material, {
       wireframe: this.config.wireframe,
     });
 
     this.scene.add(this.mesh);
-    this.camera = setCamera(this.width, this.height);
+    this.camera = createCamera(this.width, this.height);
     this.renderer.setSize(this.width, this.height, false);
     this.uniforms.resolution.value = new Float32Array([
       this.width,
