@@ -207,15 +207,15 @@ function setUniforms({ config, width, height }) {
     seed: seed,
     speed: speed,
     shadowPower: 6,
-    waveLayers: config.colors.slice(1).map((color, i, colors) => ({
+    waveLayers: config.colors.slice(1).map((color, i) => ({
       color: new Color(color),
       isSet: true,
       noiseCeil: 0.63 + 0.07 * (i + 1),
       noiseFloor: 0.1,
       noiseFlow: 6.5 + 0.3 * (i + 1),
       noiseFreq: f32([
-        2 + (i + 1) / colors.length,
-        3 + (i + 1) / colors.length,
+        2 + (i + 1) / config.colors.length,
+        3 + (i + 1) / config.colors.length,
       ]),
       noiseSeed: seed + 10 * (i + 1),
       noiseSpeed: 11 + 0.3 * (i + 1),
