@@ -40,7 +40,12 @@ like me.
 - [ ] Recreate the neccessary vertex and fragment shaders
 - [x] Add control to add/edit colors, config, etc. for the gradient
       instance.
-- [x] Compare bundle size with the original stripe gradient. (~130kb minified) 
+- [x] Compare bundle size with the original stripe gradient. (~130kb 😔 minified)
+- [ ] Use TWGL instead of three.js to reduce bundle size
+- [ ] Either add an an example (or include as a tool in the demo) on how
+      to generate a placeholder for the gradient while it loads using css. This
+      is important since if the gradient is above the fold, it could negatively
+      affect [FCP.](https://web.dev/fcp/)
 
 ## Credits
 
