@@ -44,5 +44,7 @@ export default function WaveGradientsReact(props) {
   }, [canvasElement, props]);
 
   // The target canvas element
-  return <canvas ref={canvasElement} />;
+  return (
+    <canvas ref={canvasElement} style={{ width: "100%", height: "100%" }} />
+  );
 }
