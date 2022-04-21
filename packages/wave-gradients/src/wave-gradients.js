@@ -334,13 +334,13 @@ export class WaveGradient {
      * @private
      * @type {HTMLCanvasElement}
      */
-    this.domElement = getCanvas(element);
+    this.canvas = getCanvas(element);
 
     /**
      * @private
      * @type {HTMLElement}
      */
-    this.container = this.domElement.parentElement;
+    this.container = this.canvas.parentElement;
 
     /**
      * @private
@@ -395,7 +395,7 @@ export class WaveGradient {
      */
     this.renderer = new WebGLRenderer({
       antialias: true,
-      canvas: this.domElement,
+      canvas: this.canvas,
       powerPreference: "low-power",
       stencil: false,
     });
