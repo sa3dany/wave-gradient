@@ -57,7 +57,7 @@ import fragmentShader from "./shaders/color.frag";
  */
 const DEFAULTS = {
   amplitude: 320,
-  colors: [0xef008f, 0x6ec3f4, 0x7038ff, 0xffba27],
+  colors: ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"],
   density: [0.06, 0.16],
   fps: 21,
   seed: 0,
@@ -80,14 +80,12 @@ const DEFAULTS = {
  */
 function hexToArray(hexString) {
   const hex = hexString.slice(1);
-  const size = hex.length;
-
-  if (size === 3) {
+  if (hex.length === 3) {
     const r = parseInt(hex.charAt(0) + hex.charAt(0), 16) / 255;
     const g = parseInt(hex.charAt(1) + hex.charAt(1), 16) / 255;
     const b = parseInt(hex.charAt(2) + hex.charAt(2), 16) / 255;
     return [r, g, b];
-  } else if (size === 6) {
+  } else if (hex.length === 6) {
     const r = parseInt(hex.charAt(0) + hex.charAt(1), 16) / 255;
     const g = parseInt(hex.charAt(2) + hex.charAt(3), 16) / 255;
     const b = parseInt(hex.charAt(4) + hex.charAt(5), 16) / 255;
@@ -109,7 +107,22 @@ function getOptions(options) {
   }
   for (const [option] of Object.entries(DEFAULTS)) {
     if (options[option] !== undefined) {
-      allOptions[option] = options[[option]];
+      const optionValue = options[option];
+      switch (option) {
+        case "colors":
+          if (
+            !Array.isArray(optionValue) ||
+            optionValue.length > 10 ||
+            optionValue.length < 1 ||
+            optionValue.some((color) => typeof color !== "string")
+          ) {
+            throw new Error(
+              `Invalid colors option. Must be an array of strings with a max length of 10.`
+            );
+          }
+      }
+
+      allOptions[option] = options[option];
     }
   }
   return allOptions;

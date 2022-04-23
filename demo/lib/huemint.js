@@ -53,7 +53,7 @@ const DEFAULT_COLORS = ["#ffffff", "#fe30f8", "#dca6ca", "#58bcfe"];
  * @returns {object}
  */
 export function usePalette() {
-  const [colors, setColors] = useState([]);
+  const [colors, setColors] = useState();
 
   // Helpers -----------------------------------------------------------
 
