@@ -4,6 +4,7 @@
     "allowJs": true,
     "declaration": true,
     "declarationMap": true,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "strict": true
   }
 }
