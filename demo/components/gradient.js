@@ -38,7 +38,6 @@ export default function WaveGradientsReact(props) {
 
     // hook cleanup funnction
     return () => {
-      gradient.dispose();
       window.removeEventListener("resize", onResize);
     };
   }, [canvasElement, props]);

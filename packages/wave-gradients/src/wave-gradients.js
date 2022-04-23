@@ -7,16 +7,13 @@
 // ---------------------------------------------------------------------
 
 import {
-  Color,
-  Float32BufferAttribute,
-  LineSegments,
-  Mesh,
-  OrthographicCamera,
-  PlaneGeometry,
-  RawShaderMaterial,
-  Scene,
-  WebGLRenderer,
-} from "three";
+  createProgramInfo,
+  createBufferInfoFromArrays,
+  primitives,
+  resizeCanvasToDisplaySize,
+  setBuffersAndAttributes,
+  setUniforms,
+} from "twgl.js";
 
 /**
  * Import the two shader stages: vertex and fragment. These are imported
@@ -29,10 +26,8 @@ import fragmentShader from "./shaders/color.frag";
 // Types
 // ---------------------------------------------------------------------
 
-/**
- * @typedef {number} DOMHighResTimeStamp
- * @see https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp
- */
+/** @typedef {import("twgl.js").BufferInfo} BufferInfo */
+/** @typedef {number} DOMHighResTimeStamp */
 
 /**
  * WaveGradient options.
@@ -76,11 +71,36 @@ const DEFAULTS = {
 // ---------------------------------------------------------------------
 
 /**
+ * Converts HEX RGB colors to [R,G,B] array.
+ *
+ * @param {string} hexString HEX color string
+ * @returns {Array<number>} RGB color array
+ * @see
+ * https://github.com/mrdoob/three.js/blob/77b84fd/src/math/Color.js
+ */
+function hexToArray(hexString) {
+  const hex = hexString.slice(1);
+  const size = hex.length;
+
+  if (size === 3) {
+    const r = parseInt(hex.charAt(0) + hex.charAt(0), 16) / 255;
+    const g = parseInt(hex.charAt(1) + hex.charAt(1), 16) / 255;
+    const b = parseInt(hex.charAt(2) + hex.charAt(2), 16) / 255;
+    return [r, g, b];
+  } else if (size === 6) {
+    const r = parseInt(hex.charAt(0) + hex.charAt(1), 16) / 255;
+    const g = parseInt(hex.charAt(2) + hex.charAt(3), 16) / 255;
+    const b = parseInt(hex.charAt(4) + hex.charAt(5), 16) / 255;
+    return [r, g, b];
+  }
+}
+
+/**
  * Mix default and provided options and return an object with the full
  * options set with default values for missing options.
  *
  * @param {object} options - Provided options
- * @returns {object} Full options object
+ * @returns {WaveGradientOptions} Wave gradients options
  */
 function getOptions(options) {
   const allOptions = { ...DEFAULTS };
@@ -113,67 +133,60 @@ function getCanvas(input) {
 }
 
 /**
- * Updates orthgraphic camera given a width, height.
+ * Creates the plane geomtery for the gradients.
  *
- * @param {number} width - Width of the viewport
- * @param {number} height - Height of the viewport
- * @param {number} near - Near plane
- * @param {number} far - Far plane
- * @returns {OrthographicCamera} Camera
+ * @param {WebGL2RenderingContext} gl - WebGL2 context
+ * @param {object} options Plane options
+ * @param {number} options.width - Width of the plane
+ * @param {number} options.depth - depth of the plane
+ * @param {number[]} options.density - Level of detail of the plane geometry
+ * @returns {BufferInfo} Plane geometry BufferInfo
  */
-function createCamera(width, height, near = -1000, far = 1000) {
-  const left = width / -2;
-  const top = height / 2;
-  return new OrthographicCamera(left, -left, top, -top, near, far);
-}
+function createGeometry(gl, { width, depth, density }) {
+  const { createPlaneVertices } = primitives;
 
-/**
- * Creates a new three.js plane geometry instance
- *
- * @param {number} width - Width of the plane
- * @param {number} height - Height of the plane
- * @param {number[]} density - Level of detail of the plane geometry
- * @returns {PlaneGeometry} three.js plane geometry
- */
-function createGeometry(width, height, density) {
   const gridX = Math.ceil(density[0] * width);
-  const gridY = Math.ceil(density[1] * height);
-  const geometry = new PlaneGeometry(width, height, gridX, gridY);
+  const gridZ = Math.ceil(density[1] * depth);
 
-  // Rotate to be flat across the z axis (to match strip's plane) In the
-  // vertex shader the plane is titlted in a way that fills the entire
-  // viewport
-  geometry.rotateX(-90 * (Math.PI / 180));
+  // This matrix is used to streth the plane to fit the entire Y
+  // clipspace. Specifically the `1` in index 9 of the matrix
+  const matrix = Float32Array.from([
+    -1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, -1,
+  ]);
 
-  // Three.js creates uvs scaled between [0,1]. Here we assign new uvs
-  // scaled between [-1,1]. This is used in the verte shader to fade the
-  // vertex deformation around the edge of the plane
+  // const geometry = createPlaneBufferInfo(gl, 2, 2, gridX, gridZ, matrix);
+  const geometry = createPlaneVertices(2, 2, gridX, gridZ, matrix);
+
+  // TWGL primitive funcitons create uvs (called texcoords) scaled
+  // between 0 & 1. Here we assign new uvs scaled between -1 & 1. This
+  // is used in the vertex shader to fade the vertex deformation around
+  // the edge of the plane
   const uvs = [];
-  for (let iy = 0; iy <= gridY; iy++) {
-    for (let ix = 0; ix <= gridX; ix++) {
-      uvs.push((ix / gridX) * 2 - 1);
-      uvs.push(1 - (iy / gridY) * 2);
+  for (let z = 0; z <= gridZ; z++) {
+    for (let x = 0; x <= gridX; x++) {
+      uvs.push((x / gridX) * 2 - 1);
+      uvs.push(1 - (z / gridZ) * 2);
     }
   }
 
-  geometry.setAttribute("uv", new Float32BufferAttribute(uvs, 2));
+  delete geometry.normal;
+  geometry.texcoord = uvs;
 
-  return geometry;
+  return createBufferInfoFromArrays(gl, geometry);
 }
 
 /**
  * Sets up the shader uniforms.
  *
- * @param {object} root0 - data dependencies
- * @param {WaveGradientOptions} root0.config - gradient config
- * @param {number} root0.width - viewport width
- * @param {number} root0.height - viewport height
+ * @param {object} dependencies - data dependencies
+ * @param {WaveGradientOptions} dependencies.config - gradient config
+ * @param {number} dependencies.width - viewport width
+ * @param {number} dependencies.height - viewport height
  * @returns {object} Shader uniforms object
  */
 function createUniforms({ config, width, height }) {
-  const f32 = (array) => new Float32Array(array);
-
   const { colors, seed, speed, time } = config;
+  const waveLayers = colors.slice(1);
 
   /**
    * For reference, the original stripe gradient preset values were:
@@ -199,23 +212,20 @@ function createUniforms({ config, width, height }) {
    *   noiseSpeed: 11 + (0.3 * i),
    */
   const uniforms = {
-    baseColor: new Color(colors[0]),
-    resolution: f32([width, height]),
-    realtime: time,
-    amplitude: 320,
-    seed: seed,
-    speed: speed,
-    shadowPower: 6,
-    waveLayers: config.colors.slice(1).map((color, i) => ({
-      color: new Color(color),
+    u_BaseColor: hexToArray(colors[0]),
+    u_Resolution: [width, height],
+    u_Realtime: time,
+    u_Amplitude: 320,
+    u_Seed: seed,
+    u_Speed: speed,
+    u_ShadowPower: 6,
+    u_WaveLayers: waveLayers.map((color, i) => ({
+      color: hexToArray(color),
       isSet: true,
       noiseCeil: 0.63 + 0.07 * (i + 1),
       noiseFloor: 0.1,
       noiseFlow: 6.5 + 0.3 * (i + 1),
-      noiseFreq: f32([
-        2 + (i + 1) / config.colors.length,
-        3 + (i + 1) / config.colors.length,
-      ]),
+      noiseFreq: [2 + (i + 1) / colors.length, 3 + (i + 1) / colors.length],
       noiseSeed: seed + 10 * (i + 1),
       noiseSpeed: 11 + 0.3 * (i + 1),
     })),
@@ -225,64 +235,43 @@ function createUniforms({ config, width, height }) {
    * Pad the array with empty layers.
    * Refer to the commet in the vertex shader for more details.
    */
-  while (uniforms.waveLayers.length < 10) {
-    uniforms.waveLayers.push({
+  while (uniforms.u_WaveLayers.length < 9) {
+    uniforms.u_WaveLayers.push({
+      color: [0, 0, 0],
       isSet: false,
-      color: f32([0, 0, 0]),
-      noiseFreq: new Float32Array([0, 0]),
-      noiseSpeed: 0,
-      noiseFlow: 0,
-      noiseSeed: 0,
-      noiseFloor: 0,
       noiseCeil: 0,
+      noiseFloor: 0,
+      noiseFlow: 0,
+      noiseFreq: [0, 0],
+      noiseSeed: 0,
+      noiseSpeed: 0,
     });
-  }
-
-  // Convert to three.js expected format
-  for (const [name, value] of Object.entries(uniforms)) {
-    uniforms[name] = { value };
   }
 
   return uniforms;
 }
 
 /**
- * Creates a three.js material with the given uniforms and the imported
- * vertex and fragment shaders.
- *
- * @param {object} options - material options
- * @returns {RawShaderMaterial} three.js shader material
- */
-function createMaterial(options = {}) {
-  return new RawShaderMaterial({
-    uniforms: options.uniforms,
-    vertexShader,
-    fragmentShader,
-  });
-}
-
-/**
- * Creates a mesh with the given geometry and material.
- *
- * @param {PlaneGeometry} geometry - three.js geometry
- * @param {RawShaderMaterial} material - three.js material
- * @param {object} options - mesh options
- * @param {number} options.wireframe - wireframe rendering
- * @returns {LineSegments|Mesh} Mesh or LineSegments
- */
-function createMesh(geometry, material, options = {}) {
-  return options.wireframe
-    ? new LineSegments(geometry, material)
-    : new Mesh(geometry, material);
-}
-
-/**
  * Renders a frame.
  *
- * @this {WaveGradient}
+ * @param {WaveGradient} gradient Wave gradient instance
  */
-function render() {
-  this.renderer.render(this.scene, this.camera);
+function render(gradient) {
+  const { gl } = gradient;
+
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  gl.useProgram(gradient.programInfo.program);
+
+  setBuffersAndAttributes(gl, gradient.programInfo, gradient.geometry);
+  setUniforms(gradient.programInfo, gradient.uniforms);
+
+  gl.drawElements(
+    gradient.config.wireframe ? gl.LINES : gl.TRIANGLES,
+    gradient.geometry.numElements,
+    gl.UNSIGNED_SHORT,
+    0
+  );
 }
 
 /**
@@ -302,8 +291,8 @@ function animate(now) {
     // Scale the time increment based on the speed set in config
     this.time += Math.min(timeIncrement, frameTime) * this.config.speed;
     this.state.lastFrameTime = now;
-    this.uniforms.realtime.value = this.time;
-    this.renderer.render(this.scene, this.camera);
+    this.uniforms["u_Realtime"] = this.time;
+    render(this);
   }
 
   if (this.state.playing) {
@@ -324,39 +313,38 @@ export class WaveGradient {
    * @param {WaveGradientOptions} options - gradient options
    */
   constructor(element, options = {}) {
-    /**
-     * @private
-     * @type {WaveGradientOptions}
-     */
+    /** @private */
     this.config = getOptions(options);
 
     /**
      * @private
-     * @type {HTMLCanvasElement}
+     * @see https://mdn.io/Web/API/WebGLRenderingContext/getContextAttributes
      */
-    this.canvas = getCanvas(element);
+    this.gl = getCanvas(element).getContext("webgl2", {
+      antialias: true,
+      powerPreference: "low-power",
+    });
 
-    /**
-     * @private
-     * @type {HTMLElement}
-     */
-    this.container = this.canvas.parentElement;
+    // Configure the rendering context
+    this.gl.enable(this.gl.CULL_FACE);
+    this.gl.disable(this.gl.DITHER);
 
-    /**
-     * @private
-     * @type {OrthographicCamera}
-     */
-    this.camera = createCamera(this.width, this.height);
+    // Set the size and viewport
+    resizeCanvasToDisplaySize(this.gl.canvas);
+    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
 
-    /**
-     * @private
-     * @type {PlaneGeometry}
-     */
-    this.geometry = createGeometry(
-      this.width,
-      this.height,
-      this.config.density
-    );
+    /** @private */
+    this.programInfo = createProgramInfo(this.gl, [
+      vertexShader,
+      fragmentShader,
+    ]);
+
+    /** @private */
+    this.geometry = createGeometry(this.gl, {
+      width: this.gl.canvas.width,
+      depth: this.gl.canvas.height,
+      density: this.config.density,
+    });
 
     /**
      * @private
@@ -364,44 +352,9 @@ export class WaveGradient {
      */
     this.uniforms = createUniforms({
       config: this.config,
-      width: this.width,
-      height: this.height,
+      width: this.gl.canvas.width,
+      height: this.gl.canvas.height,
     });
-
-    /**
-     * @private
-     * @type {RawShaderMaterial}
-     */
-    this.material = createMaterial({ uniforms: this.uniforms });
-
-    /**
-     * @private
-     * @type {LineSegments|Mesh}
-     */
-    this.mesh = createMesh(this.geometry, this.material, {
-      wireframe: this.config.wireframe,
-    });
-
-    /**
-     * @private
-     * @type {Scene}
-     */
-    this.scene = new Scene();
-    this.scene.add(this.mesh);
-
-    /**
-     * @private
-     * @type {WebGLRenderer}
-     */
-    this.renderer = new WebGLRenderer({
-      antialias: true,
-      canvas: this.canvas,
-      powerPreference: "low-power",
-      stencil: false,
-    });
-
-    this.renderer.setSize(this.width, this.height, false);
-    this.renderer.setClearAlpha(0);
 
     /** @private */
     this.state = { playing: false, lastFrameTime: -Infinity };
@@ -417,27 +370,9 @@ export class WaveGradient {
     this.time = this.config.time;
 
     // Render one frame on init
-    requestAnimationFrame(render.bind(this));
-  }
-
-  /**
-   * The containing element's width.
-   *
-   * @private
-   * @type {number}
-   */
-  get width() {
-    return this.container.clientWidth;
-  }
-
-  /**
-   * The containing element's height.
-   *
-   * @private
-   * @type {number}
-   */
-  get height() {
-    return this.container.clientHeight;
+    requestAnimationFrame(() => {
+      render(this);
+    });
   }
 
   /**
@@ -472,46 +407,24 @@ export class WaveGradient {
    * @returns {this} self for chaining
    */
   resize() {
-    this.scene.remove(this.mesh);
-    this.geometry.dispose();
+    resizeCanvasToDisplaySize(this.gl.canvas);
+    const { width, height } = this.gl.canvas;
 
-    this.geometry = createGeometry(
-      this.width,
-      this.height,
-      this.config.density
-    );
-    this.mesh = createMesh(this.geometry, this.material, {
-      wireframe: this.config.wireframe,
+    this.gl.viewport(0, 0, width, height);
+    this.uniforms["u_Resolution"] = [width, height];
+    this.geometry = createGeometry(this.gl, {
+      width: width,
+      depth: height,
+      density: this.config.density,
     });
 
-    this.scene.add(this.mesh);
-    this.camera = createCamera(this.width, this.height);
-    this.renderer.setSize(this.width, this.height, false);
-    this.uniforms.resolution.value = new Float32Array([
-      this.width,
-      this.height,
-    ]);
-
     if (!this.state.playing) {
-      // If the gradient is paused, render a frame on resize anyway to
-      // refresh the canvas
-      requestAnimationFrame(render.bind(this));
+      // If paused, render a frame to refresh the canvas
+      requestAnimationFrame(() => {
+        render(this);
+      });
     }
 
-    return this;
-  }
-
-  /**
-   * Cleanup any three.js resources, DOM nodes used by the gradient.
-   *
-   * @returns {this} self for chaining
-   */
-  dispose() {
-    this.scene.clear();
-    this.geometry.dispose();
-    this.material.dispose();
-    this.renderer.dispose();
-    this.state.playing = false;
     return this;
   }
 }

@@ -20,7 +20,7 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "dependencies": {
-    "three": "^0.139.0"
+    "twgl.js": "^4.22.0"
   },
   "devDependencies": {
     "clang-format": "^1.7.0",
