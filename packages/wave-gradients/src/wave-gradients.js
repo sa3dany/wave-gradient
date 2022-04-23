@@ -59,7 +59,7 @@ const DEFAULTS = {
   amplitude: 320,
   colors: [0xef008f, 0x6ec3f4, 0x7038ff, 0xffba27],
   density: [0.06, 0.16],
-  fps: 24,
+  fps: 21,
   seed: 0,
   speed: 1.25,
   time: 0,
