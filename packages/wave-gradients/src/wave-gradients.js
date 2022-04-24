@@ -39,6 +39,8 @@ import fragmentShader from "./shaders/color.frag";
  * @property {Array<number>} density - Level of detail of the plane
  *   gemotery in the x & z directions.
  * @property {number} fps - animation FPS.
+ * @property {Function} onLoad - Callback to call when the gradient has
+ *   loaded
  * @property {number} seed - Seed for the noise function.
  * @property {number} speed - Speed of the waves.
  * @property {number} time - Time of the animation.
@@ -60,6 +62,7 @@ const DEFAULTS = {
   colors: ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"],
   density: [0.06, 0.16],
   fps: 21,
+  onLoad: () => {},
   seed: 0,
   speed: 1.25,
   time: 0,
@@ -386,6 +389,9 @@ export class WaveGradient {
     requestAnimationFrame(() => {
       render(this);
     });
+
+    // Call the onLoad callback
+    this.config.onLoad();
   }
 
   /**
