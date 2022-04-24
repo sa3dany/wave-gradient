@@ -11,7 +11,7 @@ import { WaveGradient } from "wave-gradients";
  * @param {object} props Gradient options
  * @returns {React.ReactElement}
  */
-export default function WaveGradientsReact(props) {
+export default function WaveGradientsReact({ options, ...props }) {
   // Used to hold a refernce to the canvas HTML element
   const canvasElement = useRef();
 
@@ -22,9 +22,9 @@ export default function WaveGradientsReact(props) {
    * Initializes the wave gradients object.
    */
   useEffect(() => {
-    const gradient = new WaveGradient(canvasElement.current, props);
+    const gradient = new WaveGradient(canvasElement.current, options);
 
-    if (!props.paused) {
+    if (!options.paused) {
       // Start animating the gradient
       gradient.play();
     }
@@ -40,10 +40,14 @@ export default function WaveGradientsReact(props) {
     return () => {
       window.removeEventListener("resize", onResize);
     };
-  }, [canvasElement, props]);
+  }, [canvasElement, options]);
 
   // The target canvas element
   return (
-    <canvas ref={canvasElement} style={{ width: "100%", height: "100%" }} />
+    <canvas
+      ref={canvasElement}
+      style={{ width: "100%", height: "100%" }}
+      {...props}
+    />
   );
 }
