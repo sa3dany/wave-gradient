@@ -273,19 +273,14 @@ function createUniforms({ config, width, height }) {
  * @param {WaveGradient} gradient Wave gradient instance
  */
 function render(gradient) {
-  const { gl } = gradient;
-
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-  gl.useProgram(gradient.programInfo.program);
-
-  setBuffersAndAttributes(gl, gradient.programInfo, gradient.geometry);
+  gradient.resize();
+  gradient.gl.useProgram(gradient.programInfo.program);
+  setBuffersAndAttributes(gradient.gl, gradient.programInfo, gradient.geometry);
   setUniforms(gradient.programInfo, gradient.uniforms);
-
-  gl.drawElements(
-    gradient.config.wireframe ? gl.LINES : gl.TRIANGLES,
+  gradient.gl.drawElements(
+    gradient.config.wireframe ? gradient.gl.LINES : gradient.gl.TRIANGLES,
     gradient.geometry.numElements,
-    gl.UNSIGNED_SHORT,
+    gradient.gl.UNSIGNED_SHORT,
     0
   );
 }
@@ -301,13 +296,13 @@ function render(gradient) {
 function animate(now) {
   const frameTime = 1000 / this.config.fps;
   const timeIncrement = now - this.state.lastFrameTime;
-  const shouldSkipFrame = now - this.state.lastFrameTime < frameTime;
+  const shouldSkipFrame = timeIncrement < frameTime;
 
   if (!shouldSkipFrame) {
     // Scale the time increment based on the speed set in config
     this.time += Math.min(timeIncrement, frameTime) * this.config.speed;
-    this.state.lastFrameTime = now;
     this.uniforms["u_Realtime"] = this.time;
+    this.state.lastFrameTime = now;
     render(this);
   }
 
@@ -345,10 +340,6 @@ export class WaveGradient {
     this.gl.enable(this.gl.CULL_FACE);
     this.gl.disable(this.gl.DITHER);
 
-    // Set the size and viewport
-    resizeCanvasToDisplaySize(this.gl.canvas);
-    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-
     /** @private */
     this.programInfo = createProgramInfo(this.gl, [
       vertexShader,
@@ -357,8 +348,8 @@ export class WaveGradient {
 
     /** @private */
     this.geometry = createGeometry(this.gl, {
-      width: this.gl.canvas.width,
-      depth: this.gl.canvas.height,
+      width: this.gl.canvas.clientWidth,
+      depth: this.gl.canvas.clientHeight,
       density: this.config.density,
     });
 
@@ -368,8 +359,8 @@ export class WaveGradient {
      */
     this.uniforms = createUniforms({
       config: this.config,
-      width: this.gl.canvas.width,
-      height: this.gl.canvas.height,
+      width: this.gl.canvas.clientWidth,
+      height: this.gl.canvas.clientHeight,
     });
 
     /** @private */
@@ -422,28 +413,21 @@ export class WaveGradient {
   /**
    * Should be called if the contaning DOM node changes size to update
    * the canvas, camera & geometry to the new size.
-   *
-   * @returns {this} self for chaining
    */
   resize() {
-    resizeCanvasToDisplaySize(this.gl.canvas);
-    const { width, height } = this.gl.canvas;
+    if (resizeCanvasToDisplaySize(this.gl.canvas)) {
+      this.gl.viewport(
+        0,
+        0,
+        this.gl.canvas.clientWidth,
+        this.gl.canvas.clientHeight
+      );
 
-    this.gl.viewport(0, 0, width, height);
-    this.uniforms["u_Resolution"] = [width, height];
-    this.geometry = createGeometry(this.gl, {
-      width: width,
-      depth: height,
-      density: this.config.density,
-    });
-
-    if (!this.state.playing) {
-      // If paused, render a frame to refresh the canvas
-      requestAnimationFrame(() => {
-        render(this);
+      this.geometry = createGeometry(this.gl, {
+        width: this.gl.canvas.clientWidth,
+        depth: this.gl.canvas.clientHeight,
+        density: this.config.density,
       });
     }
-
-    return this;
   }
 }
