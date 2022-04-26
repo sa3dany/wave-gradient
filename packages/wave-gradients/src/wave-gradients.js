@@ -1,3 +1,5 @@
+// @ts-check
+
 /**
  * @file Wave Gradients main class
  */
@@ -19,7 +21,9 @@ import {
  * Import the two shader stages: vertex and fragment. These are imported
  * using a custom bundler plugin to read these files as strings
  */
+// @ts-ignore
 import vertexShader from "./shaders/noise.vert";
+// @ts-ignore
 import fragmentShader from "./shaders/color.frag";
 
 // ---------------------------------------------------------------------
@@ -34,7 +38,7 @@ import fragmentShader from "./shaders/color.frag";
  *
  * @typedef {object} WaveGradientOptions
  * @property {number} amplitude - Amplitude of the wave.
- * @property {Array<number>} colors - Array of colors to use for the.
+ * @property {Array<string>} colors - Array of colors to use for the.
  *   gradient. Limited to 10 colors.
  * @property {Array<number>} density - Level of detail of the plane
  *   gemotery in the x & z directions.
@@ -74,12 +78,10 @@ const DEFAULTS = {
 // ---------------------------------------------------------------------
 
 /**
- * Converts HEX RGB colors to [R,G,B] array.
+ * Converts HEX RGB colors to [R,G,B] array. From three.js source.
  *
  * @param {string} hexString HEX color string
  * @returns {Array<number>} RGB color array
- * @see
- * https://github.com/mrdoob/three.js/blob/77b84fd/src/math/Color.js
  */
 function hexToArray(hexString) {
   const hex = hexString.slice(1);
@@ -142,7 +144,7 @@ function getOptions(options) {
 function getCanvas(input) {
   const element =
     typeof input === "string" ? document.querySelector(input) : input;
-  if (!element || element.tagName !== "CANVAS") {
+  if (!element || !(element instanceof HTMLCanvasElement)) {
     throw new Error("invalid element query");
   }
   return element;
@@ -202,7 +204,6 @@ function createGeometry(gl, { width, depth, density }) {
  */
 function createUniforms({ config, width, height }) {
   const { colors, seed, speed, time } = config;
-  const waveLayers = colors.slice(1);
 
   /**
    * For reference, the original stripe gradient preset values were:
@@ -235,80 +236,40 @@ function createUniforms({ config, width, height }) {
     u_Seed: seed,
     u_Speed: speed,
     u_ShadowPower: 6,
-    u_WaveLayers: waveLayers.map((color, i) => ({
-      color: hexToArray(color),
-      isSet: true,
-      noiseCeil: 0.63 + 0.07 * (i + 1),
-      noiseFloor: 0.1,
-      noiseFlow: 6.5 + 0.3 * (i + 1),
-      noiseFreq: [2 + (i + 1) / colors.length, 3 + (i + 1) / colors.length],
-      noiseSeed: seed + 10 * (i + 1),
-      noiseSpeed: 11 + 0.3 * (i + 1),
-    })),
+    u_WaveLayers: new Array(9),
   };
 
   /**
    * Pad the array with empty layers.
    * Refer to the commet in the vertex shader for more details.
    */
-  while (uniforms.u_WaveLayers.length < 9) {
-    uniforms.u_WaveLayers.push({
-      color: [0, 0, 0],
-      isSet: false,
-      noiseCeil: 0,
-      noiseFloor: 0,
-      noiseFlow: 0,
-      noiseFreq: [0, 0],
-      noiseSeed: 0,
-      noiseSpeed: 0,
-    });
+  for (let i = 1; i < 9; i++) {
+    if (colors[i]) {
+      uniforms.u_WaveLayers[i - 1] = {
+        color: hexToArray(colors[i]),
+        isSet: true,
+        noiseCeil: 0.63 + 0.07 * i,
+        noiseFloor: 0.1,
+        noiseFlow: 6.5 + 0.3 * i,
+        noiseFreq: [2 + i / colors.length, 3 + i / colors.length],
+        noiseSeed: seed + 10 * i,
+        noiseSpeed: 11 + 0.3 * i,
+      };
+    } else {
+      uniforms.u_WaveLayers[i - 1] = {
+        color: [0, 0, 0],
+        isSet: false,
+        noiseCeil: 0,
+        noiseFloor: 0,
+        noiseFlow: 0,
+        noiseFreq: [0, 0],
+        noiseSeed: 0,
+        noiseSpeed: 0,
+      };
+    }
   }
 
-  return uniforms;
-}
-
-/**
- * Renders a frame.
- *
- * @param {WaveGradient} gradient Wave gradient instance
- */
-function render(gradient) {
-  gradient.resize();
-  gradient.gl.useProgram(gradient.programInfo.program);
-  setBuffersAndAttributes(gradient.gl, gradient.programInfo, gradient.geometry);
-  setUniforms(gradient.programInfo, gradient.uniforms);
-  gradient.gl.drawElements(
-    gradient.config.wireframe ? gradient.gl.LINES : gradient.gl.TRIANGLES,
-    gradient.geometry.numElements,
-    gradient.gl.UNSIGNED_SHORT,
-    0
-  );
-}
-
-/**
- * Animates the gradient by adjusting the time value sent to the vertex
- * shader.
- *
- * @param {DOMHighResTimeStamp} now - Current frame timestamp
- * @this {WaveGradient}
- * @returns {void}
- */
-function animate(now) {
-  const frameTime = 1000 / this.config.fps;
-  const timeIncrement = now - this.state.lastFrameTime;
-  const shouldSkipFrame = timeIncrement < frameTime;
-
-  if (!shouldSkipFrame) {
-    // Scale the time increment based on the speed set in config
-    this.time += Math.min(timeIncrement, frameTime) * this.config.speed;
-    this.uniforms["u_Realtime"] = this.time;
-    this.state.lastFrameTime = now;
-    render(this);
-  }
-
-  if (this.state.playing) {
-    requestAnimationFrame(animate.bind(this));
-  }
+  return Object.preventExtensions(uniforms);
 }
 
 /**
@@ -323,14 +284,18 @@ export class WaveGradient {
    * @param {HTMLCanvasElement|string} element - canvas element or css query
    * @param {WaveGradientOptions} options - gradient options
    */
-  constructor(element, options = {}) {
+  constructor(element, options = DEFAULTS) {
+    /*
+      Internals
+      --------- */
+
     /** @private */
     this.config = getOptions(options);
 
-    /**
-     * @private
-     * @see https://mdn.io/Web/API/WebGLRenderingContext/getContextAttributes
-     */
+    /** @private */
+    this.frameDuration = 1000 / this.config.fps;
+
+    /** @private */
     this.gl = getCanvas(element).getContext("webgl2", {
       antialias: true,
       powerPreference: "low-power",
@@ -353,10 +318,7 @@ export class WaveGradient {
       density: this.config.density,
     });
 
-    /**
-     * @private
-     * @type {object}
-     */
+    /** @private */
     this.uniforms = createUniforms({
       config: this.config,
       width: this.gl.canvas.clientWidth,
@@ -364,7 +326,23 @@ export class WaveGradient {
     });
 
     /** @private */
-    this.state = { playing: false, lastFrameTime: -Infinity };
+    this.lastFrameTime = -Infinity;
+
+    /** @private */
+    this.paused = false;
+
+    /*
+      Start animating
+      --------------- */
+
+    requestAnimationFrame((now) => {
+      this.render(now);
+      this.config.onLoad();
+    });
+
+    /*
+      Public API
+      ---------- */
 
     /**
      * The time the animation has been running in milliseconds. Can be
@@ -375,59 +353,58 @@ export class WaveGradient {
      * @type {number}
      */
     this.time = this.config.time;
-
-    // Render one frame on init
-    requestAnimationFrame(() => {
-      render(this);
-    });
-
-    // Call the onLoad callback
-    this.config.onLoad();
   }
 
   /**
-   * Start animating the gradient.
+   * Renders a frame.
    *
-   * @returns {this} self for chaining
+   * @private
+   * @param {DOMHighResTimeStamp} now - Current frame timestamp
    */
-  play() {
-    if (!this.state.playing) {
-      this.state.playing = true;
-      requestAnimationFrame(animate.bind(this));
-    }
-    return this;
-  }
-
-  /**
-   * Stop animating the gradient.
-   *
-   * @returns {this} self for chaining
-   */
-  pause() {
-    if (this.state.playing) {
-      this.state.playing = false;
-    }
-    return this;
-  }
-
-  /**
-   * Should be called if the contaning DOM node changes size to update
-   * the canvas, camera & geometry to the new size.
-   */
-  resize() {
-    if (resizeCanvasToDisplaySize(this.gl.canvas)) {
-      this.gl.viewport(
-        0,
-        0,
-        this.gl.canvas.clientWidth,
-        this.gl.canvas.clientHeight
-      );
-
-      this.geometry = createGeometry(this.gl, {
-        width: this.gl.canvas.clientWidth,
-        depth: this.gl.canvas.clientHeight,
-        density: this.config.density,
+  render(now) {
+    if (!this.paused) {
+      requestAnimationFrame((now) => {
+        this.render(now);
       });
+    }
+
+    const timeDelta = now - this.lastFrameTime;
+    const shouldSkipFrame = timeDelta < this.frameDuration;
+
+    if (!shouldSkipFrame) {
+      this.lastFrameTime = now;
+
+      // Update the `time` uniform
+      this.time += Math.min(timeDelta, this.frameDuration) * this.config.speed;
+      this.uniforms["u_Realtime"] = this.time;
+
+      const { clientWidth, clientHeight } = this.gl.canvas;
+
+      if (resizeCanvasToDisplaySize(this.gl.canvas)) {
+        // Update the canvas viewport, `resolution` uniform & geometry if
+        // the size of the canvas changed
+        this.gl.viewport(0, 0, clientWidth, clientHeight);
+        this.geometry = createGeometry(this.gl, {
+          width: clientWidth,
+          depth: clientHeight,
+          density: this.config.density,
+        });
+      }
+
+      // Uniforms must be updated each frame otherwise the initial value
+      // is used? why is that?
+      this.uniforms["u_Resolution"] = [clientWidth, clientHeight];
+
+      // Prepare for & execute the WEBGL draw call
+      this.gl.useProgram(this.programInfo.program);
+      setBuffersAndAttributes(this.gl, this.programInfo, this.geometry);
+      setUniforms(this.programInfo, this.uniforms);
+      this.gl.drawElements(
+        this.config.wireframe ? this.gl.LINES : this.gl.TRIANGLES,
+        this.geometry.numElements,
+        this.gl.UNSIGNED_SHORT,
+        0
+      );
     }
   }
 }

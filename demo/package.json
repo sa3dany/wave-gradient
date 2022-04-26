@@ -9,7 +9,7 @@
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf .next"
   },
   "dependencies": {
-    "@headlessui/react": "^0.0.0-insiders.cb7a969",
+    "@headlessui/react": "^1.5.0",
     "lodash-es": "^4.17.21",
     "next": "^12.1.1",
     "react": "^18.0.0",
