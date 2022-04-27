@@ -11,7 +11,6 @@
 import {
   createProgramInfo,
   createBufferInfoFromArrays,
-  primitives,
   resizeCanvasToDisplaySize,
   setBuffersAndAttributes,
   setUniforms,
@@ -151,7 +150,7 @@ function getCanvas(input) {
 }
 
 /**
- * Creates the plane geomtery for the gradients.
+ * Creates the plane geomtery.
  *
  * @param {WebGL2RenderingContext} gl - WebGL2 context
  * @param {object} options Plane options
@@ -161,34 +160,55 @@ function getCanvas(input) {
  * @returns {BufferInfo} Plane geometry BufferInfo
  */
 function createGeometry(gl, { width, depth, density }) {
-  const { createPlaneVertices } = primitives;
+  // Set an upper limit on the number of divisions in the plane, the
+  // idea is to have enough divisions so that no edges are visible in
+  // the plane deformations
+  const gridX = Math.min(Math.ceil(density[0] * width), 96);
+  const gridZ = Math.min(Math.ceil(density[0] * depth), 96);
+  const vertices = (gridX + 1) * (gridZ + 1);
 
-  const gridX = Math.ceil(density[0] * width);
-  const gridZ = Math.ceil(density[1] * depth);
+  // Prepare the typed arrays for the geometry
+  const geometry = {
+    position: new Float32Array(3 * vertices),
+    texcoord: new Float32Array(2 * vertices),
+    indices: new Uint16Array(3 * gridX * gridZ * 2),
+  };
 
-  // This matrix is used to streth the plane to fit the entire Y
-  // clipspace. Specifically the `1` in index 9 of the matrix
-  const matrix = Float32Array.from([
-    -1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, -1,
-  ]);
-
-  // const geometry = createPlaneBufferInfo(gl, 2, 2, gridX, gridZ, matrix);
-  const geometry = createPlaneVertices(2, 2, gridX, gridZ, matrix);
-
-  // TWGL primitive funcitons create uvs (called texcoords) scaled
-  // between 0 & 1. Here we assign new uvs scaled between -1 & 1. This
-  // is used in the vertex shader to fade the vertex deformation around
-  // the edge of the plane
-  const uvs = [];
-  for (let z = 0; z <= gridZ; z++) {
-    for (let x = 0; x <= gridX; x++) {
-      uvs.push((x / gridX) * 2 - 1);
-      uvs.push(1 - (z / gridZ) * 2);
+  // This plane is created for the WEBGL clip space, this means it has a
+  // width and depth of 2.0 and the positions of the vertices go from -1
+  // to 1 in the X and Y axis, while the Z axis goes from 0 to 1 to
+  // match the default near and far values for the depth buffer.
+  //
+  // Note though that I am not using the depth buffer since enabling the
+  // depth test in `gl.enable(gl.DEPTH_TEST)` increases GPU usage. Since
+  // the depth test is disabled, I had to order the vertices back to
+  // front (far to near) to get the correct order of the fragments.
+  for (let z = gridZ, i = 0, j = 0; z >= 0; z--) {
+    const v = z / gridZ;
+    const clipY = v * 2 - 1;
+    for (let x = gridX; x >= 0; x--, i += 3, j += 2) {
+      const clipX = (x / gridX) * 2 - 1;
+      // uv (texture coordinates)
+      geometry.texcoord[j + 0] = clipX;
+      geometry.texcoord[j + 1] = clipY;
+      // position
+      geometry.position[i + 0] = clipX;
+      geometry.position[i + 1] = clipY;
+      geometry.position[i + 2] = v;
     }
   }
 
-  delete geometry.normal;
-  geometry.texcoord = uvs;
+  const verticesAcross = gridX + 1;
+  for (let z = 0, i = 0; z < gridZ; z++) {
+    for (let x = 0; x < gridX; x++, i += 6) {
+      geometry.indices[i + 0] = (z + 0) * verticesAcross + x;
+      geometry.indices[i + 1] = (z + 0) * verticesAcross + x + 1;
+      geometry.indices[i + 2] = (z + 1) * verticesAcross + x;
+      geometry.indices[i + 3] = (z + 1) * verticesAcross + x + 1;
+      geometry.indices[i + 4] = (z + 1) * verticesAcross + x;
+      geometry.indices[i + 5] = (z + 0) * verticesAcross + x + 1;
+    }
+  }
 
   return createBufferInfoFromArrays(gl, geometry);
 }
@@ -304,6 +324,11 @@ export class WaveGradient {
     // Configure the rendering context
     this.gl.enable(this.gl.CULL_FACE);
     this.gl.disable(this.gl.DITHER);
+
+    // Enablig depth testing hurts performance in my testing. It is
+    // disabled by default but I am just making the choise explicit for
+    // documentation
+    this.gl.disable(this.gl.DEPTH_TEST);
 
     /** @private */
     this.programInfo = createProgramInfo(this.gl, [
