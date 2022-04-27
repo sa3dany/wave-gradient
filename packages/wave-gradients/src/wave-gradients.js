@@ -160,11 +160,8 @@ function getCanvas(input) {
  * @returns {BufferInfo} Plane geometry BufferInfo
  */
 function createGeometry(gl, { width, depth, density }) {
-  // Set an upper limit on the number of divisions in the plane, the
-  // idea is to have enough divisions so that no edges are visible in
-  // the plane deformations
-  const gridX = Math.min(Math.ceil(density[0] * width), 96);
-  const gridZ = Math.min(Math.ceil(density[0] * depth), 96);
+  const gridX = Math.ceil(density[0] * width);
+  const gridZ = Math.ceil(density[0] * depth);
   const vertices = (gridX + 1) * (gridZ + 1);
 
   // Prepare the typed arrays for the geometry
