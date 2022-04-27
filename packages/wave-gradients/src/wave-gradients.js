@@ -170,12 +170,11 @@ function createGeometry(gl, { width, depth, density }) {
   // Prepare the typed arrays for the geometry
   const geometry = {
     position: new Float32Array(3 * vertices),
-    texcoord: new Float32Array(2 * vertices),
     indices: new Uint16Array(3 * gridX * gridZ * 2),
   };
 
   // This plane is created for the WEBGL clip space, this means it has a
-  // width and depth of 2.0 and the positions of the vertices go from -1
+  // width and depth of 2 and the positions of the vertices go from -1
   // to 1 in the X and Y axis, while the Z axis goes from 0 to 1 to
   // match the default near and far values for the depth buffer.
   //
@@ -188,10 +187,6 @@ function createGeometry(gl, { width, depth, density }) {
     const clipY = v * 2 - 1;
     for (let x = gridX; x >= 0; x--, i += 3, j += 2) {
       const clipX = (x / gridX) * 2 - 1;
-      // uv (texture coordinates)
-      geometry.texcoord[j + 0] = clipX;
-      geometry.texcoord[j + 1] = clipY;
-      // position
       geometry.position[i + 0] = clipX;
       geometry.position[i + 1] = clipY;
       geometry.position[i + 2] = v;

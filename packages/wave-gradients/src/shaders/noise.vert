@@ -50,7 +50,6 @@ uniform struct WaveLayers {
 // ---------------------------------------------------------------------
 
 attribute vec3 position;
-attribute vec2 texcoord;
 
 // ---------------------------------------------------------------------
 // Varying
@@ -71,7 +70,7 @@ void main() {
   // Vertex displacement -----------------------------------------------
 
   vec2 frequency = vec2(14e-5, 29e-5);
-  vec2 noiseCoord = u_Resolution * texcoord * frequency;
+  vec2 noiseCoord = (u_Resolution * position.xy) * frequency;
   float amplitude = u_Amplitude * (2.0 / u_Resolution.y);
 
   float noise = snoise(vec3(
@@ -79,7 +78,7 @@ void main() {
 
   // Fades noise value to 0 at the upper edges of the plane and limits
   // the displacement to positive values.
-  noise *= 1.0 - pow(abs(texcoord.y), 2.0);
+  noise *= 1.0 - pow(abs(position.y), 2.0);
   noise = max(0.0, noise);
 
   // Final vertex position. variables starting with `gl_` are built-in
