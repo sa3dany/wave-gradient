@@ -4,13 +4,11 @@
 
 import dynamic from "next/dynamic";
 import { getPlaiceholder } from "plaiceholder";
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import Layout from "../components/layout";
 import { usePalette } from "../lib/huemint";
 
-const WaveGradient = dynamic(() => import("../components/gradient"), {
-  suspense: true,
-});
+const WaveGradient = dynamic(() => import("../components/gradient"));
 
 /**
  * Prepares the CSS for the placeholder
@@ -44,16 +42,14 @@ export default function DemoPage({ css }) {
           className="absolute inset-0 h-full w-full
             rotate-6 scale-150 blur-3xl saturate-150"
         />
-        <Suspense>
-          <WaveGradient
-            className="animate-fadein"
-            // --
-            colors={colors}
-            seed={2411.5}
-            time={8000}
-            wireframe={false}
-          />
-        </Suspense>
+        <WaveGradient
+          className="animate-fadein"
+          // --
+          colors={colors}
+          seed={2411.5}
+          time={8000}
+          wireframe={false}
+        />
       </div>
     </Layout>
   );
