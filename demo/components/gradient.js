@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { WaveGradient } from "wave-gradients";
+import { WaveGradient } from "wave-gradient";
 
 /**
  * WaveGradeints react component.

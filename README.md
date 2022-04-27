@@ -12,8 +12,8 @@ different gradients. Turns out it's actually a 3D scene rendered with
 OpenGL that uses an [orthographic
 camera](https://en.wikipedia.org/wiki/Orthographic_projection), a plane
 mesh and
-[two](packages/wave-gradients/src/stripe/vertex.glsl)
-[kinds](packages/wave-gradients/src/stripe/fragment.glsl)
+[two](packages/wave-gradient/src/shader/noise.vert)
+[kinds](packages/wave-gradient/src/shader/color.frag)
 of [GLSL
 shaders](https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_on_the_web/GLSL_Shaders).
 

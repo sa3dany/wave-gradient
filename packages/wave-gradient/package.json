@@ -1,10 +1,10 @@
 {
-  "name": "wave-gradients",
+  "name": "wave-gradient",
   "version": "0.0.0",
   "type": "module",
-  "main": "./dist/wave-gradients.js",
+  "main": "./dist/wave-gradient.js",
   "exports": {
-    ".": "./dist/wave-gradients.js"
+    ".": "./dist/wave-gradient.js"
   },
   "files": [
     "dist"
@@ -12,7 +12,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/sa3dany/wave-gradients.git",
-    "directory": "packages/wave-gradients"
+    "directory": "packages/wave-gradient"
   },
   "scripts": {
     "build": "node scripts/esbuild.js && tsc",

@@ -14,7 +14,7 @@
     "next": "^12.1.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "wave-gradients": "*"
+    "wave-gradient": "*"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.4",

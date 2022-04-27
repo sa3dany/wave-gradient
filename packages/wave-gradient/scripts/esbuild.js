@@ -6,7 +6,7 @@ watch && console.log("ready - watching for changes");
 
 build({
   bundle: true,
-  entryPoints: ["src/wave-gradients.js"],
+  entryPoints: ["src/wave-gradient.js"],
   format: "esm",
   outdir: "dist",
   plugins: [glsl()],
