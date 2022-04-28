@@ -4,7 +4,7 @@
 
 import dynamic from "next/dynamic";
 import { getPlaiceholder } from "plaiceholder";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Layout from "../components/layout";
 import { usePalette } from "../lib/huemint";
 
@@ -27,6 +27,8 @@ export const getStaticProps = async () => {
  */
 export default function DemoPage({ css }) {
   const palette = usePalette();
+
+  const [reducedMotion, setReducedMotion] = useState();
   const [colors, setColors] = useState([
     "#5a43a8",
     "#ffc674",
@@ -34,22 +36,32 @@ export default function DemoPage({ css }) {
     "#8fb7f3",
   ]);
 
+  // Respect `prefers-reduced-motion`
+  useEffect(() => {
+    const { matches } = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(matches);
+  }, []);
+
   return (
     <Layout>
       <div className="absolute inset-0 -z-20 overflow-hidden">
+        {/* Placeholder using static CSS gradients */}
         <div
           style={css}
           className="absolute inset-0 h-full w-full
             rotate-6 scale-150 blur-3xl saturate-150"
         />
-        <WaveGradient
-          className="animate-fadein"
-          // --
-          colors={colors}
-          seed={2411.5}
-          time={8000}
-          wireframe={false}
-        />
+
+        {reducedMotion === false && (
+          <WaveGradient
+            className="animate-fadein"
+            // --
+            colors={colors}
+            seed={2411.5}
+            time={8000}
+            wireframe={false}
+          />
+        )}
       </div>
     </Layout>
   );
