@@ -1,9 +1,8 @@
 // ---------------------------------------------------------------------
 //
-// Vertex shader stage for the wave gradients. This is the same as the
-// originalvertex shader used on stripe.com for their gradients. I've
-// added more commments for clarity and refactored a few parts into
-// functions.
+// Vertex shader stage for the wave gradients. This is based on the
+// originalcvertex shader used on stripe.com for their gradients. I've
+// added more commments for clarity.
 //
 // ---------------------------------------------------------------------
 
@@ -24,12 +23,12 @@
 // ---------------------------------------------------------------------
 
 // to match precision in fragment shader, `mediump` is used here.
-uniform mediump vec2 u_Resolution;
 
-uniform float u_Realtime;
+uniform mediump vec2 u_Resolution;
 uniform float u_Amplitude;
-uniform float u_Speed;
+uniform float u_Realtime;
 uniform float u_Seed;
+uniform float u_Speed;
 
 #define MAX_COLOR_LAYERS 9
 
@@ -85,7 +84,7 @@ void main() {
   // to WebGL. The `gl_Position` variable is the output of the vertex
   // shader stage and sets the position of each vertex.
   gl_Position =
-    vec4(vec3(position.x, position.y + (noise * amplitude), position.z), 1.0);
+    vec4(position.x, position.y + (noise * amplitude), position.z, 1.0);
 
   // Vertex color ------------------------------------------------------
 

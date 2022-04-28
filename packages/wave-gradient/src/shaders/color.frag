@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------
 //
 // Fragment shader stage for the wave gradients. The is the same as the
-// original fragment shader used on strip.com for their gradients with
+// original fragment shader used on stripe.com for their gradients with
 // comments added by me for clarity.
 //
 // ---------------------------------------------------------------------
