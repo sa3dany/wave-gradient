@@ -54,7 +54,7 @@ export default function DemoPage({ css }) {
 
         {reducedMotion === false && (
           <WaveGradient
-            className="animate-fadein"
+            className="animate-fadein will-change-transform"
             // --
             colors={colors}
             seed={2411.5}
