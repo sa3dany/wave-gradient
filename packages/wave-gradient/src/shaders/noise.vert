@@ -30,8 +30,7 @@ uniform float u_Realtime;
 uniform float u_Seed;
 uniform float u_Speed;
 
-#define MAX_COLOR_LAYERS 9
-
+const int i_MAX_COLOR_LAYERS = 9;
 uniform vec3 u_BaseColor;
 uniform struct WaveLayers {
   vec3 color;
@@ -42,7 +41,7 @@ uniform struct WaveLayers {
   vec2 noiseFreq;
   float noiseSeed;
   float noiseSpeed;
-} u_WaveLayers[MAX_COLOR_LAYERS];
+} u_WaveLayers[i_MAX_COLOR_LAYERS];
 
 // ---------------------------------------------------------------------
 // Attributes
@@ -93,7 +92,7 @@ void main() {
 
   // Loop though the color layers and belnd whith the previous layer
   // color with an alpha value based on the noise function
-  for (int i = 0; i < MAX_COLOR_LAYERS; i++) {
+  for (int i = 0; i < i_MAX_COLOR_LAYERS; i++) {
 
     // Break from loop on the first undefinde wave layer
     if (!u_WaveLayers[i].isSet) {

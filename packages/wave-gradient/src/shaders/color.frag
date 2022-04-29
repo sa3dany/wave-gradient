@@ -8,7 +8,12 @@
 
 // Use atleast `mediump` to avoid color banding in the color noise. see:
 // https://webgl2fundamentals.org/webgl/lessons/webgl-precision-issues
+// The commented lines before and afte the next line are for the shader
+// minifier to ignore the line since at the moment it causes a pparse
+// error
+//[
 precision mediump float;
+//]
 
 // ---------------------------------------------------------------------
 // Uniforms

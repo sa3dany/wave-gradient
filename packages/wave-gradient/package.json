@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build": "node scripts/esbuild.js && tsc",
+    "build:shaders": "node scripts/minify-shaders.js",
     "dev": "node scripts/esbuild.js --watch",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },

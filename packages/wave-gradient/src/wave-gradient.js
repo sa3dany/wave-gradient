@@ -16,14 +16,12 @@ import {
   setUniforms,
 } from "twgl.js";
 
-/**
- * Import the two shader stages: vertex and fragment. These are imported
- * using a custom bundler plugin to read these files as strings
- */
-// @ts-ignore
-import vertexShader from "./shaders/noise.vert";
-// @ts-ignore
-import fragmentShader from "./shaders/color.frag";
+import {
+  noise_vert,
+  color_frag,
+  blend_glsl,
+  snoise_glsl,
+} from "./shaders/bundle";
 
 // ---------------------------------------------------------------------
 // Types
@@ -324,8 +322,8 @@ export class WaveGradient {
 
     /** @private */
     this.programInfo = createProgramInfo(this.gl, [
-      vertexShader,
-      fragmentShader,
+      `${blend_glsl}${snoise_glsl}${noise_vert}`,
+      `${color_frag}`,
     ]);
 
     /** @private */

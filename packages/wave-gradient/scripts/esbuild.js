@@ -8,6 +8,7 @@ build({
   bundle: true,
   entryPoints: ["src/wave-gradient.js"],
   format: "esm",
+  minify: !watch,
   outdir: "dist",
   plugins: [glsl()],
   sourcemap: watch,
