@@ -41,7 +41,7 @@ import {
  *   gemotery in the x & z directions.
  * @property {number} fps - animation FPS.
  * @property {Function} onLoad - Callback to call when the gradient has
- *   loaded
+ *   loaded.
  * @property {number} seed - Seed for the noise function.
  * @property {number} speed - Speed of the waves.
  * @property {number} time - Time of the animation.
