@@ -311,15 +311,6 @@ export class WaveGradient {
       powerPreference: "low-power",
     });
 
-    // Configure the rendering context
-    this.gl.enable(this.gl.CULL_FACE);
-    this.gl.disable(this.gl.DITHER);
-
-    // Enablig depth testing hurts performance in my testing. It is
-    // disabled by default but I am just making the choise explicit for
-    // documentation
-    this.gl.disable(this.gl.DEPTH_TEST);
-
     /** @private */
     this.programInfo = createProgramInfo(this.gl, [
       `${blend_glsl}${snoise_glsl}${noise_vert}`,
@@ -345,6 +336,15 @@ export class WaveGradient {
 
     /** @private */
     this.paused = false;
+
+    // Configure the rendering context
+    this.gl.enable(this.gl.CULL_FACE);
+    this.gl.disable(this.gl.DITHER);
+
+    // Enablig depth testing hurts performance in my testing. It is
+    // disabled by default but I am just making the choise explicit for
+    // documentation
+    this.gl.disable(this.gl.DEPTH_TEST);
 
     /*
       Start animating

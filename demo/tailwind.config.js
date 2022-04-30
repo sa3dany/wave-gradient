@@ -5,7 +5,7 @@ module.exports = {
   theme: {
     extend: {
       animation: {
-        fadein: "fadein 0.5s reverse ease-in-out 0.5s both",
+        fadein: "fadein 0.5s ease-in-out 0.5s both",
       },
       colors: {
         gray: colors.neutral,
@@ -16,8 +16,8 @@ module.exports = {
       },
       keyframes: {
         fadein: {
-          to: { opacity: "0%", transform: "scale(1.5)" },
-          from: { opacity: "100%", transform: "scale(1)" },
+          from: { opacity: "0%", transform: "scale(1.5)" },
+          to: { opacity: "100%", transform: "scale(1)" },
         },
       },
     },

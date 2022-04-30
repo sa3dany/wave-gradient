@@ -44,13 +44,14 @@ export default function DemoPage({ css }) {
 
   return (
     <Layout>
-      <div className="absolute inset-0 -z-20 overflow-hidden">
+      <div className="relative -z-50 -mx-5 h-1/2 overflow-hidden">
         {/* Placeholder using static CSS gradients */}
-        <div
-          style={css}
-          className="absolute inset-0 h-full w-full
-            rotate-6 scale-150 blur-3xl saturate-150"
-        />
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            style={css}
+            className="h-full rotate-6 scale-150 blur-3xl saturate-150"
+          />
+        </div>
 
         {reducedMotion === false && (
           <WaveGradient
