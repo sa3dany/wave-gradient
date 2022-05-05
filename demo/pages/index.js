@@ -39,18 +39,15 @@ export default function DemoPage({ css }) {
 
   return (
     <Layout>
-      <div className="relative -z-50 -mx-5 h-1/2 overflow-hidden">
+      <div className="relative -z-50 -mx-5 h-full overflow-hidden">
         {/* Placeholder using static CSS gradients */}
         <div className="absolute inset-0 overflow-hidden">
-          <div
-            style={css}
-            className="h-full rotate-6 scale-150 blur-3xl saturate-150"
-          />
+          <div style={css} className="h-full rotate-1 scale-125 blur-3xl" />
         </div>
 
         {reducedMotion === false && (
           <WaveGradient
-            className="animate-fadein will-change-transform"
+            className="animate-fadein"
             // --
             colors={colors}
             seed={2411.5}
