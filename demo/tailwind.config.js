@@ -11,7 +11,6 @@ module.exports = {
         gray: colors.neutral,
       },
       fontFamily: {
-        sans: ["'PT Sans'", "sans-serif"],
         display: ["'Bebas Neue'", "sans-serif"],
       },
       keyframes: {

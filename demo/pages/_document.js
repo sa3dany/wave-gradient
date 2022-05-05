@@ -8,10 +8,6 @@ export default function Document() {
           href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap&text=WAVEGRADIENTS"
           rel="stylesheet"
         />
-        <link
-          href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap"
-          rel="stylesheet"
-        />
         <style>{`
           html, body, #__next {
             height: 100%;
