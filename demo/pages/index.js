@@ -16,7 +16,7 @@ const WaveGradient = dynamic(() => import("../components/gradient"));
  */
 export const getStaticProps = async () => {
   const { css } = await getPlaiceholder("/gradient-placeholder.webp", {
-    size: 5,
+    size: 8,
   });
   return { props: { css } };
 };
@@ -29,12 +29,7 @@ export default function DemoPage({ css }) {
   const palette = usePalette();
 
   const [reducedMotion, setReducedMotion] = useState();
-  const [colors, setColors] = useState([
-    "#5a43a8",
-    "#ffc674",
-    "#e7eceb",
-    "#8fb7f3",
-  ]);
+  const [colors, setColors] = useState(["#5a43a8", "#ffc674", "#8fb7f3"]);
 
   // Respect `prefers-reduced-motion`
   useEffect(() => {
