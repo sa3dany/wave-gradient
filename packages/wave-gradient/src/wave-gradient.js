@@ -16,12 +16,7 @@ import {
   setUniforms,
 } from "twgl.js";
 
-import {
-  noise_vert,
-  color_frag,
-  blend_glsl,
-  snoise_glsl,
-} from "./shaders/bundle";
+import { noise_vert, color_frag, blend_glsl, snoise_glsl } from "./shaders";
 
 // ---------------------------------------------------------------------
 // Types
