@@ -21,7 +21,7 @@
     "dev": "run-p dev:shaders dev:lib",
     "dev:lib": "node scripts/esbuild.js --watch",
     "dev:shaders": "npm run minify:shaders -- --watch",
-    "lint": "eslint src && tsc",
+    "lint": "eslint src",
     "minify:shaders": "node scripts/minify-shaders.js",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
