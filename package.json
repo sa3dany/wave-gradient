@@ -11,7 +11,7 @@
     "clean": "turbo run clean && rm -rf node_modules"
   },
   "devDependencies": {
-    "@netlify/plugin-nextjs": "^4.2.8",
+    "@netlify/plugin-nextjs": "^4.7.0",
     "eslint": "^8.12.0",
     "plaiceholder": "^2.3.0",
     "prettier": "^2.6.1",

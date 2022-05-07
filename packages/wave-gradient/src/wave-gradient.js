@@ -298,7 +298,7 @@ export class WaveGradient {
     this.config = getOptions(options);
 
     /** @private */
-    this.frameDuration = 1000 / this.config.fps;
+    this.frameInterval = 1000 / this.config.fps;
 
     /** @private */
     this.gl = getCanvas(element).getContext("webgl2", {
@@ -327,7 +327,7 @@ export class WaveGradient {
     });
 
     /** @private */
-    this.lastFrameTime = -Infinity;
+    this.lastFrameTime = 0;
 
     /** @private */
     this.paused = false;
@@ -378,14 +378,15 @@ export class WaveGradient {
       });
     }
 
-    const timeDelta = now - this.lastFrameTime;
-    const shouldSkipFrame = timeDelta < this.frameDuration;
+    const delta = now - this.lastFrameTime;
 
-    if (!shouldSkipFrame) {
-      this.lastFrameTime = now;
+    if (delta > this.frameInterval) {
+      // I leanred this trick to get a more acurate framerate from:
+      // https://gist.github.com/addyosmani/5434533
+      this.lastFrameTime = now - (delta % this.frameInterval);
 
       // Update the `time` uniform
-      this.time += Math.min(timeDelta, this.frameDuration) * this.config.speed;
+      this.time += Math.min(delta, this.frameInterval) * this.config.speed;
       this.uniforms["u_Realtime"] = this.time;
 
       const { clientWidth, clientHeight } = this.gl.canvas;
