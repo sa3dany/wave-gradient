@@ -1,3 +1,4 @@
+#version 300 es
 // ---------------------------------------------------------------------
 //
 // Vertex shader stage for the wave gradients. This is based on the
@@ -6,13 +7,19 @@
 //
 // ---------------------------------------------------------------------
 
+// This has no effect on runtime, it is here simply because it is
+// required by the GLSL linter I am using in order to support `#include`
+// macros so that the linter does not complain about missing function.
+#extension GL_GOOGLE_include_directive : enable
+#include "includes/blend.glsl"
+#include "includes/snoise.glsl"
+
 // ---------------------------------------------------------------------
-// External functions headers
+// Function headers
 // ---------------------------------------------------------------------
 
-// This is not a requirement, but I am adding these to avoid  linting
-// errors from the GLSL linter I am using.
-
+// This is required so that the shader minifier will use the same
+// shortened names for these function in the external files.
 vec3 blendNormal(vec3 base, vec3 blend, float opacity);
 float snoise(vec3 v);
 
@@ -45,14 +52,14 @@ uniform struct WaveLayers {
 // Attributes
 // ---------------------------------------------------------------------
 
-attribute vec3 position;
+in vec3 position;
 
 // ---------------------------------------------------------------------
 // Varying
 // ---------------------------------------------------------------------
 
 // These are variables sent to the fragment shader
-varying vec3 v_Color;
+out vec3 v_Color;
 
 // ---------------------------------------------------------------------
 // Vertex shader entry point

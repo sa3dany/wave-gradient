@@ -1,3 +1,4 @@
+#version 300 es
 // ---------------------------------------------------------------------
 //
 // Fragment shader stage for the wave gradients. The is the same as the
@@ -26,26 +27,29 @@ uniform float u_ShadowPower;
 // Input variables
 // ---------------------------------------------------------------------
 
-varying vec3 v_Color;
+in vec3 v_Color;
+
+// ---------------------------------------------------------------------
+// Output variable
+// ---------------------------------------------------------------------
+
+out vec4 color;
 
 // ---------------------------------------------------------------------
 // Fragment shader entry point
 // ---------------------------------------------------------------------
 
 void main() {
-  vec3 color = v_Color;
-
   // Normalize the fragment pixel coordinates between 0.0 - 1.0 st is a
   // reference to the st swizzle mask which is usually used for texture
   // coordinates in shaders
   vec2 st = gl_FragCoord.xy / u_Resolution.xy;
+
+  color = vec4(v_Color, 1.0);
 
   // In the original shader, this processing section was only enabled
   // based on an attribute value which was set to `true` if the HTML
   // attribute `data-js-darken-top` was set on the canvas element. Here,
   // for simplicity, I am alwaying enabling this extra processing step.
   color.g -= pow(st.y + sin(-12.0) * st.x, u_ShadowPower) * 0.4;
-
-  // Set the final pixel color
-  gl_FragColor = vec4(color, 1.0);
 }

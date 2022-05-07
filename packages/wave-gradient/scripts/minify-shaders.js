@@ -32,6 +32,8 @@ function minify() {
     .toString()
     // convert to LF line endings
     .replace(/\r\n/g, "\n")
+    // remove #extention and include directives
+    .replace(/#(extension|include).+\n/g, "")
     // replace vars with exported consts
     .replace(/\bvar\s+/g, "export const ")
     // insert semicolons after the exported consts

@@ -143,6 +143,27 @@ function getCanvas(input) {
 }
 
 /**
+ * Linkes a shaader stage with it's includes and makes sure to place
+ * `#version 300 es` as the first line is the shader stage is using
+ * WEBGL2.
+ *
+ * @param {string} stage shader stage source code string
+ * @param {Array<string>} includes shader stage source includes
+ * @returns {string} shader linked shader source
+ */
+function linkShader(stage, includes) {
+  const isWebGL2 = /^#version 300 es/;
+  if (isWebGL2.test(stage)) {
+    return `#version 300 es\n${includes.join("")}${stage.replace(
+      isWebGL2,
+      ""
+    )}`;
+  } else {
+    return `${includes.join("")}${stage}`;
+  }
+}
+
+/**
  * Creates the plane geomtery.
  *
  * @param {WebGL2RenderingContext} gl - WebGL2 context
@@ -308,7 +329,7 @@ export class WaveGradient {
 
     /** @private */
     this.programInfo = createProgramInfo(this.gl, [
-      `${blend_glsl}${snoise_glsl}${noise_vert}`,
+      linkShader(noise_vert, [blend_glsl, snoise_glsl]),
       `${color_frag}`,
     ]);
 
