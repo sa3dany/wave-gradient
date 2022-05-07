@@ -1,8 +1,7 @@
 import { build } from "esbuild";
-import { glsl } from "esbuild-plugin-glsl-include";
 
 const watch = process.argv.includes("--watch");
-watch && console.log("ready - watching for changes");
+watch && console.log("ready - esbuild watching for changes");
 
 build({
   bundle: true,
@@ -10,11 +9,10 @@ build({
   format: "esm",
   minify: !watch,
   outdir: "dist",
-  plugins: [glsl()],
   sourcemap: watch,
   watch: watch && {
     onRebuild(error) {
-      !error && console.log("event - watch build succeeded");
+      !error && console.log("event - esbuild build succeeded");
     },
   },
 }).catch(() => process.exit(1));
