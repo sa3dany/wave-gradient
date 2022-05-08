@@ -324,6 +324,7 @@ export class WaveGradient {
     /** @private */
     this.gl = getCanvas(element).getContext("webgl2", {
       antialias: true,
+      depth: false,
       powerPreference: "low-power",
     });
 
