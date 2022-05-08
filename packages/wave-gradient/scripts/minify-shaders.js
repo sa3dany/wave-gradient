@@ -41,7 +41,7 @@ function minify() {
     // remove extra newlines
     .replace(/\n+$/g, "\n");
 
-  writeFileSync("src/shaders/index.js", module);
+  writeFileSync("src/shaders.js", module);
 
   console.log("event - shader minify succeeded");
 }
