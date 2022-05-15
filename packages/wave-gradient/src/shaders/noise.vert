@@ -52,7 +52,7 @@ uniform struct WaveLayers {
 // Attributes
 // ---------------------------------------------------------------------
 
-in vec3 position;
+in vec3 a_Position;
 
 // ---------------------------------------------------------------------
 // Varying
@@ -73,7 +73,7 @@ void main() {
   // Vertex displacement -----------------------------------------------
 
   vec2 frequency = vec2(14e-5, 29e-5);
-  vec2 noiseCoord = (u_Resolution * position.xy) * frequency;
+  vec2 noiseCoord = (u_Resolution * a_Position.xy) * frequency;
   float amplitude = u_Amplitude * (2.0 / u_Resolution.y);
 
   float noise = snoise(vec3(
@@ -81,14 +81,14 @@ void main() {
 
   // Fades noise value to 0 at the upper edges of the plane and limits
   // the displacement to positive values.
-  noise *= 1.0 - pow(abs(position.y), 2.0);
+  noise *= 1.0 - pow(abs(a_Position.y), 2.0);
   noise = max(0.0, noise);
 
   // Final vertex position. variables starting with `gl_` are built-in
   // to WebGL. The `gl_Position` variable is the output of the vertex
   // shader stage and sets the position of each vertex.
   gl_Position =
-    vec4(position.x, position.y + (noise * amplitude), position.z, 1.0);
+    vec4(a_Position.x, a_Position.y + (noise * amplitude), a_Position.z, 1.0);
 
   // Vertex color ------------------------------------------------------
 
