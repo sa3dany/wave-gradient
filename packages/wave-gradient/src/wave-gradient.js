@@ -166,14 +166,12 @@ function linkShader(stage, includes) {
 function createGeometry({ width, depth, density }) {
   const gridX = Math.ceil(density[0] * width);
   const gridZ = Math.ceil(density[0] * depth);
-  const vertices = (gridX + 1) * (gridZ + 1);
 
-  // Prepare the typed arrays for the geometry
-  // TODO: use Uint32 if index count exceeds 2^16
-  const geometry = {
-    positions: new Float32Array(3 * vertices),
-    indices: new Uint16Array(3 * gridX * gridZ * 2),
-  };
+  // Prepare the typed arrays for the indexed geometry
+  const vertexCount = 3 * (gridX + 1) * (gridZ + 1);
+  const positions = new ArrayBuffer(4 * vertexCount);
+  const indexCount = 3 * 2 * gridX * gridZ;
+  const indices = new ArrayBuffer(4 * indexCount);
 
   // This plane is created for the WEBGL clip space, this means it has a
   // width and depth of 2 and the positions of the vertices go from -1
@@ -184,30 +182,30 @@ function createGeometry({ width, depth, density }) {
   // depth test in `gl.enable(gl.DEPTH_TEST)` increases GPU usage. Since
   // the depth test is disabled, I had to order the vertices back to
   // front (far to near) to get the correct order of the fragments.
-  for (let z = gridZ, i = 0, j = 0; z >= 0; z--) {
+  for (let z = gridZ, i = 0, view = new DataView(positions); z >= 0; z--) {
     const v = z / gridZ;
     const clipY = v * 2 - 1;
-    for (let x = gridX; x >= 0; x--, i += 3, j += 2) {
+    for (let x = gridX; x >= 0; x--, i += 3) {
       const clipX = (x / gridX) * 2 - 1;
-      geometry.positions[i + 0] = clipX;
-      geometry.positions[i + 1] = clipY;
-      geometry.positions[i + 2] = v;
+      view.setFloat32((i + 0) * 4, clipX, true);
+      view.setFloat32((i + 1) * 4, clipY, true);
+      view.setFloat32((i + 2) * 4, v, true);
     }
   }
 
   const verticesAcross = gridX + 1;
-  for (let z = 0, i = 0; z < gridZ; z++) {
+  for (let z = 0, i = 0, view = new DataView(indices); z < gridZ; z++) {
     for (let x = 0; x < gridX; x++, i += 6) {
-      geometry.indices[i + 0] = (z + 0) * verticesAcross + x;
-      geometry.indices[i + 1] = (z + 0) * verticesAcross + x + 1;
-      geometry.indices[i + 2] = (z + 1) * verticesAcross + x;
-      geometry.indices[i + 3] = (z + 1) * verticesAcross + x + 1;
-      geometry.indices[i + 4] = (z + 1) * verticesAcross + x;
-      geometry.indices[i + 5] = (z + 0) * verticesAcross + x + 1;
+      view.setUint32((i + 0) * 4, (z + 0) * verticesAcross + x, true);
+      view.setUint32((i + 1) * 4, (z + 0) * verticesAcross + x + 1, true);
+      view.setUint32((i + 2) * 4, (z + 1) * verticesAcross + x, true);
+      view.setUint32((i + 3) * 4, (z + 0) * verticesAcross + x + 1, true);
+      view.setUint32((i + 4) * 4, (z + 1) * verticesAcross + x + 1, true);
+      view.setUint32((i + 5) * 4, (z + 1) * verticesAcross + x, true);
     }
   }
 
-  return geometry;
+  return { positions, indices };
 }
 
 /**
@@ -612,8 +610,8 @@ export class WaveGradient {
       // Prepare for & execute the WEBGL draw call
       this.gl.drawElements(
         this.config.wireframe ? this.gl.LINES : this.gl.TRIANGLES,
-        this.geometry.indices.length,
-        this.gl.UNSIGNED_SHORT,
+        this.geometry.indices.byteLength / 4,
+        this.gl.UNSIGNED_INT,
         0
       );
     }
