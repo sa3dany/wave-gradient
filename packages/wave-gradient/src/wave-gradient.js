@@ -426,10 +426,6 @@ export class WaveGradient {
         value: config.seed,
         type: "1f",
       },
-      u_Speed: {
-        value: config.speed,
-        type: "1f",
-      },
       u_ShadowPower: {
         value: 6,
         type: "1f",

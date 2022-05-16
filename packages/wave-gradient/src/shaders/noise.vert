@@ -33,7 +33,6 @@ uniform mediump vec2 u_Resolution;
 uniform float u_Amplitude;
 uniform float u_Realtime;
 uniform float u_Seed;
-uniform float u_Speed;
 
 const int i_MAX_COLOR_LAYERS = 9;
 uniform vec3 u_BaseColor;
