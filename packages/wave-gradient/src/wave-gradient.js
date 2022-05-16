@@ -368,7 +368,8 @@ export class WaveGradient {
       console.error("vs info-log: " + gl.getShaderInfoLog(vs));
       console.error("fs info-log: " + gl.getShaderInfoLog(fs));
     }
-    (vs = null), (fs = null);
+    gl.deleteShader(vs), (vs = null);
+    gl.deleteShader(fs), (fs = null);
 
     // Prepare attributes
     const geometry = createGeometry({
@@ -524,6 +525,9 @@ export class WaveGradient {
     /** @private */
     this.paused = false;
 
+    /** @private */
+    this.destroyed = false;
+
     /*
      * Public API
      * ---------- */
@@ -555,6 +559,10 @@ export class WaveGradient {
    * @param {DOMHighResTimeStamp} now - Current frame timestamp
    */
   render(now) {
+    if (this.destroyed) {
+      return;
+    }
+
     if (!this.paused) {
       requestAnimationFrame((now) => {
         this.render(now);
@@ -607,5 +615,20 @@ export class WaveGradient {
         0
       );
     }
+  }
+
+  destroy() {
+    // Delete attribute buffers
+    for (const [, attribute] of Object.entries(this.attributes)) {
+      this.gl.deleteBuffer(attribute.buffer);
+      this.gl.deleteBuffer(attribute.indexBuffer);
+    }
+
+    // Delete the program
+    this.gl.deleteProgram(this.program);
+
+    // Set the `destroyed` state to true to end the
+    // `requestAnimationFrame` calls
+    this.destroyed = true;
   }
 }
