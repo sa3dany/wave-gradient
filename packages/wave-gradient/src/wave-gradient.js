@@ -173,7 +173,7 @@ function createGeometry({ width, depth, density }) {
   const indexCount = 3 * 2 * gridX * gridZ;
   const indices = new ArrayBuffer(4 * indexCount);
 
-  // This plane is created for the WEBGL clip space, this means it has a
+  // This plane is created for WEBGL clip space, this means it has a
   // width and depth of 2 and the positions of the vertices go from -1
   // to 1 in the X and Y axis, while the Z axis goes from 0 to 1 to
   // match the default near and far values for the depth buffer.
@@ -383,14 +383,10 @@ export class WaveGradient {
         buffer: gl.createBuffer(),
       },
     };
-    // has to be bound before the ELEMENT_ARRAY_BUFFER is bound,
-    // otherwise the ELEMENT_ARRAY_BUFFER will be unbound
-    const vao = gl.createVertexArray();
-    gl.bindVertexArray(vao);
     gl.bindBuffer(gl.ARRAY_BUFFER, attributes.a_Position.buffer);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.a_Position.indexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, geometry.positions, gl.DYNAMIC_DRAW);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.indices, gl.DYNAMIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, geometry.positions, gl.STATIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.indices, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(attributes.a_Position.location);
     gl.vertexAttribPointer(
       attributes.a_Position.location,
