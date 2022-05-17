@@ -205,7 +205,7 @@ function createGeometry({ width, depth, density }) {
     }
   }
 
-  return { positions, indices };
+  return { positions, indices, count: indexCount };
 }
 
 /**
@@ -610,7 +610,7 @@ export class WaveGradient {
       // Prepare for & execute the WEBGL draw call
       this.gl.drawElements(
         this.config.wireframe ? this.gl.LINES : this.gl.TRIANGLES,
-        this.geometry.indices.byteLength / 4,
+        this.geometry.count,
         this.gl.UNSIGNED_INT,
         0
       );
