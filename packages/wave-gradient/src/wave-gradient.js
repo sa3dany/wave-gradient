@@ -57,6 +57,20 @@ const DEFAULTS = {
 };
 
 // ---------------------------------------------------------------------
+// Invariants
+// ---------------------------------------------------------------------
+
+/**
+ * @param {boolean} result - test result
+ * @param {string} message - Message to display if condition is false
+ */
+function invariant(result, message) {
+  if (!result) {
+    throw new Error(message);
+  }
+}
+
+// ---------------------------------------------------------------------
 // Helper functions
 // ---------------------------------------------------------------------
 
@@ -114,23 +128,6 @@ function getOptions(options) {
     }
   }
   return allOptions;
-}
-
-/**
- * Validates that an HTML canvas element or a css selector matching a
- * canvas element are provided.
- *
- * @param {string|HTMLElement} input - Canvas element or selector
- * @throws if no canvas element found
- * @returns {HTMLCanvasElement} Canvas element
- */
-function getCanvas(input) {
-  const element =
-    typeof input === "string" ? document.querySelector(input) : input;
-  if (!element || !(element instanceof HTMLCanvasElement)) {
-    throw new Error("invalid element query");
-  }
-  return element;
 }
 
 /**
@@ -314,26 +311,23 @@ export class WaveGradient {
    * or a css query, in which case the first matching element will be
    * used.
    *
-   * @param {HTMLCanvasElement|string} element - canvas element or css query
+   * @param {HTMLCanvasElement} canvas - canvas element
    * @param {WaveGradientOptions} options - gradient options
    */
-  constructor(element, options = DEFAULTS) {
-    // Get options
-    const config = getOptions(options);
-
-    /*
-     * Setup WebGL
-     * ----------- */
-
-    // Get a WebGL2 context
-    const canvas = getCanvas(element);
-    resizeCanvas(canvas);
-
+  constructor(canvas, options = DEFAULTS) {
     const gl = canvas.getContext("webgl2", {
       antialias: true,
       depth: false,
       powerPreference: "low-power",
     });
+
+    if (!gl) {
+      throw new Error("Could not acquire a WEBGL2 context");
+    }
+
+    resizeCanvas(canvas);
+
+    const config = getOptions(options);
 
     // Set initial viewport size
     gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight);
@@ -528,10 +522,6 @@ export class WaveGradient {
     /** @private */
     this.destroyed = false;
 
-    /*
-     * Public API
-     * ---------- */
-
     /**
      * The time the animation has been running in milliseconds. Can be
      * set while the animation is running to seek to a specific point in
@@ -541,10 +531,6 @@ export class WaveGradient {
      * @type {number}
      */
     this.time = config.time;
-
-    /*
-     * Start animating
-     * --------------- */
 
     requestAnimationFrame((now) => {
       this.render(now);
