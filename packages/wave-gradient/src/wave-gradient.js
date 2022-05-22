@@ -26,8 +26,6 @@ import { noise_vert, color_frag, blend_glsl, snoise_glsl } from "./shaders";
  * @property {Array<number>} density - Level of detail of the plane
  *   gemotery in the x & z directions.
  * @property {number} fps - animation FPS.
- * @property {Function} onLoad - Callback to call when the gradient has
- *   loaded.
  * @property {number} seed - Seed for the noise function.
  * @property {number} speed - Speed of the waves.
  * @property {number} time - Time of the animation.
@@ -44,31 +42,16 @@ import { noise_vert, color_frag, blend_glsl, snoise_glsl } from "./shaders";
  * @default
  * @type {WaveGradientOptions}
  */
-const DEFAULTS = {
+const DEFAULT_OPTIONS = {
   amplitude: 320,
   colors: ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"],
   density: [0.06, 0.16],
   fps: 24,
-  onLoad: () => {},
   seed: 0,
   speed: 1.25,
   time: 0,
   wireframe: false,
 };
-
-// ---------------------------------------------------------------------
-// Invariants
-// ---------------------------------------------------------------------
-
-/**
- * @param {boolean} result - test result
- * @param {string} message - Message to display if condition is false
- */
-function invariant(result, message) {
-  if (!result) {
-    throw new Error(message);
-  }
-}
 
 // ---------------------------------------------------------------------
 // Helper functions
@@ -103,30 +86,15 @@ function rgbTo3f(hexString) {
  * @returns {WaveGradientOptions} Wave gradients options
  */
 function getOptions(options) {
-  const allOptions = { ...DEFAULTS };
+  const allOptions = { ...DEFAULT_OPTIONS };
   if (!options) {
     return allOptions;
   }
-  for (const [option] of Object.entries(DEFAULTS)) {
-    if (options[option] !== undefined) {
-      const optionValue = options[option];
-      switch (option) {
-        case "colors":
-          if (
-            !Array.isArray(optionValue) ||
-            optionValue.length > 10 ||
-            optionValue.length < 1 ||
-            optionValue.some((color) => typeof color !== "string")
-          ) {
-            throw new Error(
-              `Invalid colors option. Must be an array of strings with a max length of 10.`
-            );
-          }
-      }
-
-      allOptions[option] = options[option];
+  Object.keys(DEFAULT_OPTIONS).forEach((name) => {
+    if (options[name] !== undefined) {
+      allOptions[name] = options[name];
     }
-  }
+  });
   return allOptions;
 }
 
@@ -154,13 +122,12 @@ function linkShader(stage, includes) {
 /**
  * Creates the plane geomtery.
  *
- * @param {object} options Plane options
- * @param {number} options.width - Width of the plane
- * @param {number} options.depth - depth of the plane
- * @param {number[]} options.density - Level of detail of the plane geometry
+ * @param {number} width - Width of the plane
+ * @param {number} depth - depth of the plane
+ * @param {number[]} density - Level of detail of the plane geometry
  * @returns {object} Plane geometry BufferInfo
  */
-function createGeometry({ width, depth, density }) {
+function createGeometry(width, depth, density) {
   const gridX = Math.ceil(density[0] * width);
   const gridZ = Math.ceil(density[0] * depth);
 
@@ -206,85 +173,6 @@ function createGeometry({ width, depth, density }) {
 }
 
 /**
- * Sets up the shader uniforms.
- *
- * @param {object} dependencies - data dependencies
- * @param {WaveGradientOptions} dependencies.config - gradient config
- * @param {number} dependencies.width - viewport width
- * @param {number} dependencies.height - viewport height
- * @returns {object} Shader uniforms object
- */
-// function createUniforms({ config, width, height }) {
-//   const { colors, seed, speed, time } = config;
-
-//   /**
-//    * For reference, the original stripe gradient preset values were:
-//    *
-//    * time:                   1253106
-//    * shadow_power:           6 {canvas.y < 600 ? 5 : 6}
-//    * global.noiseSpeed:      5e-6
-//    * global.noiseFreq:      [14e-5, 29e-5]
-//    * vertDeform.noiseFreq:  [3, 4]
-//    * vertDeform.noiseSpeed:  10
-//    * vertDeform.noiseFlow:   3
-//    * vertDeform.noiseSeed:   5
-//    * vertDeform.noiseAmp:    320
-//    *
-//    * for (i = 1; i < sectionColors.length; i++):
-//    *   color:      sectionColors[i]
-//    *   noiseCeil:  0.63 + (0.07 * i),
-//    *   noiseFloor: 0.1,
-//    *   noiseFlow:  6.5 + (0.3 * i),
-//    *   noiseFreq: [2 + (i / sectionColors.length),
-//    *               3 + (i / sectionColors.length)]
-//    *   noiseSeed:  seed + (10 * i),
-//    *   noiseSpeed: 11 + (0.3 * i),
-//    */
-//   const uniforms = {
-//     u_BaseColor: rgbTo3f(colors[0]),
-//     u_Resolution: [width, height],
-//     u_Realtime: time,
-//     u_Amplitude: 320,
-//     u_Seed: seed,
-//     u_Speed: speed,
-//     u_ShadowPower: 6,
-//     u_WaveLayers: new Array(9),
-//   };
-
-//   /**
-//    * Pad the array with empty layers.
-//    * Refer to the commet in the vertex shader for more details.
-//    */
-//   for (let i = 1; i < 9; i++) {
-//     if (colors[i]) {
-//       uniforms.u_WaveLayers[i - 1] = {
-//         color: rgbTo3f(colors[i]),
-//         isSet: true,
-//         noiseCeil: 0.63 + 0.07 * i,
-//         noiseFloor: 0.1,
-//         noiseFlow: 6.5 + 0.3 * i,
-//         noiseFreq: [2 + i / colors.length, 3 + i / colors.length],
-//         noiseSeed: seed + 10 * i,
-//         noiseSpeed: 11 + 0.3 * i,
-//       };
-//     } else {
-//       uniforms.u_WaveLayers[i - 1] = {
-//         color: [0, 0, 0],
-//         isSet: false,
-//         noiseCeil: 0,
-//         noiseFloor: 0,
-//         noiseFlow: 0,
-//         noiseFreq: [0, 0],
-//         noiseSeed: 0,
-//         noiseSpeed: 0,
-//       };
-//     }
-//   }
-
-//   return Object.preventExtensions(uniforms);
-// }
-
-/**
  * Resize a canvas to match the size it's displayed. Copied from
  * TWGL.js by greggman.
  *
@@ -303,6 +191,261 @@ function resizeCanvas(canvas) {
 }
 
 /**
+ * Creates a WebGL context.
+ *
+ * @param {HTMLCanvasElement} canvas canvas element
+ * @returns {WebGL2RenderingContext} rendering context
+ */
+function createContext(canvas) {
+  const gl = canvas.getContext("webgl2", {
+    antialias: true,
+    depth: false,
+    powerPreference: "low-power",
+  });
+
+  if (!gl) {
+    throw new Error("Could not acquire a WEBGL2 context");
+  }
+
+  // Enable culling of back triangle faces
+  gl.enable(gl.CULL_FACE);
+
+  // Not-needed since I am using atleast `mediump` precicion in the
+  // fragment shader
+  gl.disable(gl.DITHER);
+
+  // Enablig depth testing hurts performance in my testing. It is
+  // disabled by default but I am just making the choise explicit for
+  // documentation
+  gl.disable(gl.DEPTH_TEST);
+
+  return gl;
+}
+
+/**
+ * Creates a WebGL program.
+ *
+ * @param {WebGLRenderingContext} gl rendering context
+ * @param {string} vertexShaderSource vertex shader source
+ * @param {string} fragmentShaderSource source code for the fragment shader
+ * @returns {WebGLProgram} shader program
+ */
+function createProgram(gl, vertexShaderSource, fragmentShaderSource) {
+  const program = gl.createProgram();
+  if (!program) {
+    throw new Error("Could not create WebGL program");
+  }
+
+  let vertexShader = gl.createShader(gl.VERTEX_SHADER);
+  let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+  if (!vertexShader || !fragmentShader) {
+    gl.deleteShader(vertexShader);
+    gl.deleteShader(fragmentShader);
+    throw new Error("Could not create shader");
+  }
+
+  gl.shaderSource(vertexShader, vertexShaderSource);
+  gl.compileShader(vertexShader);
+  gl.attachShader(program, vertexShader);
+  gl.shaderSource(fragmentShader, fragmentShaderSource);
+  gl.compileShader(fragmentShader);
+  gl.attachShader(program, fragmentShader);
+
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    gl.deleteProgram(program);
+    console.error(gl.getProgramInfoLog(program));
+    console.error(gl.getShaderInfoLog(vertexShader));
+    console.error(gl.getShaderInfoLog(fragmentShader));
+    throw new Error("Could not link WebGL program");
+  }
+
+  // cleanup
+  gl.deleteShader(vertexShader);
+  gl.deleteShader(fragmentShader);
+
+  gl.useProgram(program);
+
+  return program;
+}
+
+/**
+ * Creates the attributes for the WebGL program.
+ *
+ * @param {WebGL2RenderingContext} gl rendering context
+ * @param {WaveGradientOptions} options options
+ * @returns {object} attributes
+ */
+function createAttributes(gl, options) {
+  const program = gl.getParameter(gl.CURRENT_PROGRAM);
+  if (!program) {
+    throw new Error("Could not get active WebGL program");
+  }
+
+  const geometry = createGeometry(
+    gl.canvas.clientWidth,
+    gl.canvas.clientHeight,
+    options.density
+  );
+
+  const attributes = {
+    a_Position: {
+      arrayBuffer: gl.createBuffer(),
+      arrayData: geometry.positions,
+      indexBuffer: gl.createBuffer(),
+      indexData: geometry.indices,
+      location: gl.getAttribLocation(program, "a_Position"),
+    },
+  };
+
+  for (const [, attribute] of Object.entries(attributes)) {
+    gl.bindBuffer(gl.ARRAY_BUFFER, attribute.arrayBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, attribute.arrayData, gl.STATIC_DRAW);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attribute.indexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, attribute.indexData, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(attribute.location);
+    gl.vertexAttribPointer(attributes.location, 3, gl.FLOAT, false, 0, 0);
+  }
+
+  return attributes;
+}
+
+/**
+ * Creates the uniforms for the WebGL program.
+ *
+ * @param {WebGL2RenderingContext} gl rendering context
+ * @param {WaveGradientOptions} options options
+ * @returns {object} uniforms
+ */
+function createUniforms(gl, options) {
+  const program = gl.getParameter(gl.CURRENT_PROGRAM);
+  if (!program) {
+    throw new Error("Could not get active WebGL program");
+  }
+
+  const uniforms = {
+    u_BaseColor: {
+      value: rgbTo3f(options.colors[0]),
+      type: "3f",
+    },
+    u_Resolution: {
+      value: [gl.canvas.clientWidth, gl.canvas.clientHeight],
+      type: "2f",
+    },
+    u_Realtime: {
+      value: options.time,
+      type: "1f",
+    },
+    u_Amplitude: {
+      value: options.amplitude,
+      type: "1f",
+    },
+    u_Seed: {
+      value: options.seed,
+      type: "1f",
+    },
+    u_ShadowPower: {
+      value: 6,
+      type: "1f",
+    },
+    u_WaveLayers: {
+      value: new Array(9)
+        .fill({
+          color: { value: [0, 0, 0], type: "3f" },
+          isSet: { value: false, type: "1i" },
+          noiseCeil: { value: 0, type: "1f" },
+          noiseFloor: { value: 0, type: "1f" },
+          noiseFlow: { value: 0, type: "1f" },
+          noiseFreq: { value: [0, 0], type: "2f" },
+          noiseSeed: { value: 0, type: "1f" },
+          noiseSpeed: { value: 0, type: "1f" },
+        })
+        .map((layer, i) => {
+          if (i >= options.colors.length - 1) return layer;
+          const j = i + 1;
+          return {
+            color: { value: rgbTo3f(options.colors[j]), type: "3f" },
+            isSet: { value: true, type: "1i" },
+            noiseCeil: { value: 0.63 + 0.07 * j, type: "1f" },
+            noiseFloor: { value: 0.1, type: "1f" },
+            noiseFlow: { value: 6.5 + 0.3 * j, type: "1f" },
+            noiseFreq: {
+              value: [
+                2 + j / options.colors.length,
+                3 + j / options.colors.length,
+              ],
+              type: "2f",
+            },
+            noiseSeed: { value: options.seed + 10 * j, type: "1f" },
+            noiseSpeed: { value: 11 + 0.3 * j, type: "1f" },
+          };
+        }),
+    },
+  };
+
+  for (const [name, uniform] of Object.entries(uniforms)) {
+    const createSetter = (name, type) => {
+      const uniformX = `uniform${type}`;
+      const location = gl.getUniformLocation(program, name);
+      return (value) => {
+        Array.isArray(value)
+          ? gl[uniformX](location, ...value)
+          : gl[uniformX](location, value);
+      };
+    };
+
+    if (
+      Array.isArray(uniform.value) &&
+      uniform.value.every((v) => typeof v === "object")
+    ) {
+      uniform.value.forEach((member, i) => {
+        const structName = name;
+        for (const [name, uniform] of Object.entries(member)) {
+          uniform.set = createSetter(
+            `${structName}[${i}].${name}`,
+            uniform.type
+          );
+          uniform.set(uniform.value);
+        }
+      });
+    } else {
+      uniform.set = createSetter(name, uniform.type);
+      uniform.set(uniform.value);
+    }
+  }
+
+  return uniforms;
+}
+
+// ---------------------------------------------------------------------
+// Class
+// ---------------------------------------------------------------------
+
+/**
+ * For reference, the original stripe gradient preset values were:
+ *
+ * time:                   1253106
+ * shadow_power:           6 {canvas.y < 600 ? 5 : 6}
+ * global.noiseSpeed:      5e-6
+ * global.noiseFreq:      [14e-5, 29e-5]
+ * vertDeform.noiseFreq:  [3, 4]
+ * vertDeform.noiseSpeed:  10
+ * vertDeform.noiseFlow:   3
+ * vertDeform.noiseSeed:   5
+ * vertDeform.noiseAmp:    320
+ *
+ * for (i = 1; i < sectionColors.length; i++):
+ *   color:      sectionColors[i]
+ *   noiseCeil:  0.63 + (0.07 * i),
+ *   noiseFloor: 0.1,
+ *   noiseFlow:  6.5 + (0.3 * i),
+ *   noiseFreq: [2 + (i / sectionColors.length),
+ *               3 + (i / sectionColors.length)]
+ *   noiseSeed:  seed + (10 * i),
+ *   noiseSpeed: 11 + (0.3 * i),
+ */
+
+/**
  * Class that recreates the https://stripe.com animated gradient.
  */
 export class WaveGradient {
@@ -314,204 +457,25 @@ export class WaveGradient {
    * @param {HTMLCanvasElement} canvas - canvas element
    * @param {WaveGradientOptions} options - gradient options
    */
-  constructor(canvas, options = DEFAULTS) {
-    const gl = canvas.getContext("webgl2", {
-      antialias: true,
-      depth: false,
-      powerPreference: "low-power",
-    });
-
-    if (!gl) {
-      throw new Error("Could not acquire a WEBGL2 context");
-    }
-
+  constructor(canvas, options = DEFAULT_OPTIONS) {
     resizeCanvas(canvas);
 
-    const config = getOptions(options);
+    this.gl = createContext(canvas);
+    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
 
-    // Set initial viewport size
-    gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight);
-
-    // Enable culling of back triangle faces
-    gl.enable(gl.CULL_FACE);
-
-    // Not-needed since I am using atleast `mediump` precicion in the
-    // fragment shader
-    gl.disable(gl.DITHER);
-
-    // Enablig depth testing hurts performance in my testing. It is
-    // disabled by default but I am just making the choise explicit for
-    // documentation
-    gl.disable(gl.DEPTH_TEST);
-
-    // create & compile shaders
-    let vs = gl.createShader(gl.VERTEX_SHADER);
-    let fs = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(vs, linkShader(noise_vert, [blend_glsl, snoise_glsl]));
-    gl.shaderSource(fs, color_frag);
-    gl.compileShader(vs);
-    gl.compileShader(fs);
-
-    // create program and attach shaders
-    const program = gl.createProgram();
-    gl.attachShader(program, vs);
-    gl.attachShader(program, fs);
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error("Link failed: " + gl.getProgramInfoLog(program));
-      console.error("vs info-log: " + gl.getShaderInfoLog(vs));
-      console.error("fs info-log: " + gl.getShaderInfoLog(fs));
-    }
-    gl.deleteShader(vs), (vs = null);
-    gl.deleteShader(fs), (fs = null);
-
-    // Prepare attributes
-    const geometry = createGeometry({
-      width: canvas.clientWidth,
-      depth: canvas.clientHeight,
-      density: config.density,
-    });
-    const attributes = {
-      a_Position: {
-        location: gl.getAttribLocation(program, "a_Position"),
-        indexBuffer: gl.createBuffer(),
-        buffer: gl.createBuffer(),
-      },
-    };
-    gl.bindBuffer(gl.ARRAY_BUFFER, attributes.a_Position.buffer);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attributes.a_Position.indexBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, geometry.positions, gl.STATIC_DRAW);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.indices, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(attributes.a_Position.location);
-    gl.vertexAttribPointer(
-      attributes.a_Position.location,
-      3,
-      gl.FLOAT,
-      false,
-      0,
-      0
+    this.program = createProgram(
+      this.gl,
+      linkShader(noise_vert, [snoise_glsl, blend_glsl]),
+      color_frag
     );
 
-    // Must be set before setting unifroms
-    gl.useProgram(program);
+    this.options = getOptions(options);
 
-    // Prepare uniforms
-    const uniforms = {
-      u_BaseColor: {
-        value: rgbTo3f(config.colors[0]),
-        type: "3f",
-      },
-      u_Resolution: {
-        value: [canvas.clientWidth, canvas.clientHeight],
-        type: "2f",
-      },
-      u_Realtime: {
-        value: config.time,
-        type: "1f",
-      },
-      u_Amplitude: {
-        value: config.amplitude,
-        type: "1f",
-      },
-      u_Seed: {
-        value: config.seed,
-        type: "1f",
-      },
-      u_ShadowPower: {
-        value: 6,
-        type: "1f",
-      },
-      u_WaveLayers: {
-        value: new Array(9)
-          .fill({
-            color: { value: [0, 0, 0], type: "3f" },
-            isSet: { value: false, type: "1i" },
-            noiseCeil: { value: 0, type: "1f" },
-            noiseFloor: { value: 0, type: "1f" },
-            noiseFlow: { value: 0, type: "1f" },
-            noiseFreq: { value: [0, 0], type: "2f" },
-            noiseSeed: { value: 0, type: "1f" },
-            noiseSpeed: { value: 0, type: "1f" },
-          })
-          .map((layer, i) => {
-            if (i >= config.colors.length - 1) return layer;
-            const j = i + 1;
-            return {
-              color: { value: rgbTo3f(config.colors[j]), type: "3f" },
-              isSet: { value: true, type: "1i" },
-              noiseCeil: { value: 0.63 + 0.07 * j, type: "1f" },
-              noiseFloor: { value: 0.1, type: "1f" },
-              noiseFlow: { value: 6.5 + 0.3 * j, type: "1f" },
-              noiseFreq: {
-                value: [
-                  2 + j / config.colors.length,
-                  3 + j / config.colors.length,
-                ],
-                type: "2f",
-              },
-              noiseSeed: { value: config.seed + 10 * j, type: "1f" },
-              noiseSpeed: { value: 11 + 0.3 * j, type: "1f" },
-            };
-          }),
-      },
-    };
-    for (const [name, uniform] of Object.entries(uniforms)) {
-      /**
-       * @param {string} name uniform name
-       * @param {string} type uniform type
-       * @returns {Function} setter function
-       */
-      const createSetter = (name, type) => {
-        const uniformX = `uniform${type}`;
-        const location = gl.getUniformLocation(program, name);
-        /** @param {number|Array<number>} value new uniform value */
-        return (value) => {
-          Array.isArray(value)
-            ? gl[uniformX](location, ...value)
-            : gl[uniformX](location, value);
-        };
-      };
-
-      if (
-        Array.isArray(uniform.value) &&
-        uniform.value.every((v) => typeof v === "object")
-      ) {
-        uniform.value.forEach((member, i) => {
-          const structName = name;
-          for (const [name, uniform] of Object.entries(member)) {
-            uniform.set = createSetter(
-              `${structName}[${i}].${name}`,
-              uniform.type
-            );
-            uniform.set(uniform.value);
-          }
-        });
-      } else {
-        uniform.set = createSetter(name, uniform.type);
-        uniform.set(uniform.value);
-      }
-    }
+    this.attributes = createAttributes(this.gl, this.options);
+    this.uniforms = createUniforms(this.gl, this.options);
 
     /** @private */
-    this.attributes = attributes;
-
-    /** @private */
-    this.uniforms = uniforms;
-
-    /** @private */
-    this.config = config;
-
-    /** @private */
-    this.frameInterval = 1000 / config.fps;
-
-    /** @private */
-    this.gl = gl;
-
-    /** @private */
-    this.program = program;
-
-    /** @private */
-    this.geometry = geometry;
+    this.frameInterval = 1000 / this.options.fps;
 
     /** @private */
     this.lastFrameTime = 0;
@@ -530,11 +494,10 @@ export class WaveGradient {
      * @public
      * @type {number}
      */
-    this.time = config.time;
+    this.time = this.options.time;
 
     requestAnimationFrame((now) => {
       this.render(now);
-      config.onLoad();
     });
   }
 
@@ -563,40 +526,44 @@ export class WaveGradient {
       this.lastFrameTime = now - (delta % this.frameInterval);
 
       // set program
-      this.gl.useProgram(this.program);
+      // this.gl.useProgram(this.program);
 
       // Update the `time` uniform
-      this.time += Math.min(delta, this.frameInterval) * this.config.speed;
-      this.uniforms["u_Realtime"].set(this.time);
-
-      const { clientWidth, clientHeight } = this.gl.canvas;
+      this.time += Math.min(delta, this.frameInterval) * this.options.speed;
+      this.uniforms.u_Realtime.set(this.time);
 
       if (resizeCanvas(this.gl.canvas)) {
         // Update the canvas viewport, `resolution` uniform & geometry if
         // the size of the canvas changed
+        const { clientWidth, clientHeight } = this.gl.canvas;
+
         this.gl.viewport(0, 0, clientWidth, clientHeight);
-        this.uniforms["u_Resolution"].set([clientWidth, clientHeight]);
-        this.geometry = createGeometry({
-          width: clientWidth,
-          depth: clientHeight,
-          density: this.config.density,
-        });
+        this.uniforms.u_Resolution.set([clientWidth, clientHeight]);
+
+        const geometry = createGeometry(
+          clientWidth,
+          clientHeight,
+          this.options.density
+        );
+
         this.gl.bufferData(
           this.gl.ARRAY_BUFFER,
-          this.geometry.positions,
+          geometry.positions,
           this.gl.STATIC_DRAW
         );
         this.gl.bufferData(
           this.gl.ELEMENT_ARRAY_BUFFER,
-          this.geometry.indices,
+          geometry.indices,
           this.gl.STATIC_DRAW
         );
+
+        this.attributes.a_Position.indexData = geometry.indices;
       }
 
       // Prepare for & execute the WEBGL draw call
       this.gl.drawElements(
-        this.config.wireframe ? this.gl.LINES : this.gl.TRIANGLES,
-        this.geometry.count,
+        this.options.wireframe ? this.gl.LINES : this.gl.TRIANGLES,
+        this.attributes.a_Position.indexData.byteLength / 4,
         this.gl.UNSIGNED_INT,
         0
       );
@@ -606,7 +573,7 @@ export class WaveGradient {
   destroy() {
     // Delete attribute buffers
     for (const [, attribute] of Object.entries(this.attributes)) {
-      this.gl.deleteBuffer(attribute.buffer);
+      this.gl.deleteBuffer(attribute.arrayBuffer);
       this.gl.deleteBuffer(attribute.indexBuffer);
     }
 

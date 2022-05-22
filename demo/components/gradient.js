@@ -16,7 +16,7 @@ export default function WaveGradientsReact(props) {
   const canvasElement = useRef();
 
   // Destructure the props
-  const { colors, seed, speed, time, wireframe, onLoad, ...rest } = props;
+  const { colors, seed, speed, time, wireframe, ...rest } = props;
 
   // useEffect(() => {
   //   glsllint();
@@ -32,13 +32,12 @@ export default function WaveGradientsReact(props) {
       speed,
       time,
       wireframe,
-      onLoad,
     });
 
     return () => {
       gradient.destroy();
     };
-  }, [canvasElement, colors, seed, speed, time, wireframe, onLoad]);
+  }, [canvasElement, colors, seed, speed, time, wireframe]);
 
   return (
     <canvas

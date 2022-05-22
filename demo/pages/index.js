@@ -7,6 +7,7 @@ import { getPlaiceholder } from "plaiceholder";
 import { useEffect, useState } from "react";
 import Layout from "../components/layout";
 import { usePalette } from "../lib/huemint";
+import init from "../lib/glsllint";
 
 const WaveGradient = dynamic(() => import("../components/gradient"));
 
@@ -35,6 +36,7 @@ export default function DemoPage({ css }) {
   useEffect(() => {
     const { matches } = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReducedMotion(matches);
+    // init();
   }, []);
 
   return (
