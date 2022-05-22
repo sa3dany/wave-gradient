@@ -8,7 +8,7 @@
 // Imports
 // ---------------------------------------------------------------------
 
-import { noise_vert, color_frag, blend_glsl, snoise_glsl } from "./shaders";
+import { noise_vert, color_frag } from "./shaders";
 
 // ---------------------------------------------------------------------
 // Types
@@ -96,27 +96,6 @@ function getOptions(options) {
     }
   });
   return allOptions;
-}
-
-/**
- * Linkes a shaader stage with it's includes and makes sure to place
- * `#version 300 es` as the first line is the shader stage is using
- * WEBGL2.
- *
- * @param {string} stage shader stage source code string
- * @param {Array<string>} includes shader stage source includes
- * @returns {string} shader linked shader source
- */
-function linkShader(stage, includes) {
-  const isWebGL2 = /^#version 300 es/;
-  if (isWebGL2.test(stage)) {
-    return `#version 300 es\n${includes.join("")}${stage.replace(
-      isWebGL2,
-      ""
-    )}`;
-  } else {
-    return `${includes.join("")}${stage}`;
-  }
 }
 
 /**
@@ -458,19 +437,13 @@ export class WaveGradient {
    * @param {WaveGradientOptions} options - gradient options
    */
   constructor(canvas, options = DEFAULT_OPTIONS) {
-    resizeCanvas(canvas);
-
     this.gl = createContext(canvas);
+
+    resizeCanvas(canvas);
     this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
 
-    this.program = createProgram(
-      this.gl,
-      linkShader(noise_vert, [snoise_glsl, blend_glsl]),
-      color_frag
-    );
-
     this.options = getOptions(options);
-
+    this.program = createProgram(this.gl, noise_vert, color_frag);
     this.attributes = createAttributes(this.gl, this.options);
     this.uniforms = createUniforms(this.gl, this.options);
 

@@ -7,21 +7,9 @@
 //
 // ---------------------------------------------------------------------
 
-// This has no effect on runtime, it is here simply because it is
-// required by the GLSL linter I am using in order to support `#include`
-// macros so that the linter does not complain about missing function.
 #extension GL_GOOGLE_include_directive : enable
 #include "includes/blend.glsl"
 #include "includes/snoise.glsl"
-
-// ---------------------------------------------------------------------
-// Function headers
-// ---------------------------------------------------------------------
-
-// This is required so that the shader minifier will use the same
-// shortened names for these function in the external files.
-vec3 blendNormal(vec3 base, vec3 blend, float opacity);
-float snoise(vec3 v);
 
 // ---------------------------------------------------------------------
 // Uniforms
