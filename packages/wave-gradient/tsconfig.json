@@ -1,5 +1,5 @@
 {
-  "include": ["dist/wave-gradient.js"],
+  "include": ["dist/**/*.js"],
   "compilerOptions": {
     "allowJs": true,
     "declaration": true,
