@@ -3,7 +3,6 @@ import { watch as fsWatch } from "chokidar";
 import { unlinkSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { basename, join } from "path";
-import { promisify } from "util";
 import { parse as parseInclude } from "./glsl-include.js";
 
 const SHADER_FILES = ["src/shaders/noise.vert", "src/shaders/color.frag"];
