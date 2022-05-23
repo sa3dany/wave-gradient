@@ -15,13 +15,9 @@
     "directory": "packages/wave-gradient"
   },
   "scripts": {
-    "build": "node scripts/esbuild.js",
-    "build:shaders": "npm run minify:shaders",
-    "dev": "run-p dev:shaders dev:lib",
-    "dev:lib": "node scripts/esbuild.js --watch",
-    "dev:shaders": "npm run minify:shaders -- --watch",
+    "build": "node scripts/build.js --no-glsl-minify",
+    "dev": "node scripts/build.js --watch",
     "lint": "eslint src",
-    "minify:shaders": "node scripts/minify-shaders.js",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
   },
   "devDependencies": {
