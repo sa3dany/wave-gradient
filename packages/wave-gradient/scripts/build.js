@@ -106,6 +106,7 @@ function esbuild(watch = false) {
     minify: !watch,
     outdir: "dist",
     sourcemap: true,
+    target: "es2018",
     watch: watch && {
       onRebuild(error) {
         !error && console.log("event - esbuild build succeeded");
