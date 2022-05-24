@@ -1,14 +1,5 @@
 // @ts-check
-
-/**
- * @file Wave Gradients main class
- */
-
-// ---------------------------------------------------------------------
-// Imports
-// ---------------------------------------------------------------------
-
-import { noise_vert, color_frag } from "./shaders";
+import { vert, frag } from "./shaders";
 
 // ---------------------------------------------------------------------
 // Types
@@ -433,7 +424,7 @@ export class WaveGradient {
     this.resize();
 
     this.options = getOptions(options);
-    this.program = createProgram(this.gl, noise_vert, color_frag);
+    this.program = createProgram(this.gl, vert, frag);
     this.attributes = createAttributes(this.gl, this.options);
     this.uniforms = createUniforms(this.gl, this.options);
 

@@ -9,7 +9,7 @@ import { promisify } from "util";
 const readFile = promisify(_readFile);
 
 const MODULE_CACHE = new Map();
-const SHADER_FILES = ["src/shaders/noise.vert", "src/shaders/color.frag"];
+const SHADER_FILES = ["src/shaders/.vert", "src/shaders/.frag"];
 
 // ---------------------------------------------------------------------
 // Parse command line arguments
@@ -147,8 +147,12 @@ async function shaderMinifier() {
       .toString()
       // convert to LF line endings
       .replace(/\r\n/g, "\n")
-      // remove #extention and include directives
-      .replace(/#(extension|include).+\n/g, "")
+      // remove #extention directives
+      .replace(/#(extension).+\n/g, "")
+      // chnage snake_case to camelCase
+      .replace(/\b([a-z])?(_)([a-z])/g, (_match, p1, _p2, p3) =>
+        p1 ? p1 + p3.toUpperCase() : p3
+      )
       // replace vars with exported consts
       .replace(/\bvar\s+/g, "export const ")
       // insert semicolons after the exported consts

@@ -2,10 +2,10 @@
  * http://www.ctrl-alt-test.fr
  */
 
-export const noise_vert = `#version 300 es
+export const vert = `#version 300 es
 vec3 o(vec3 t,vec3 c,float r){return c*r+t*(1.-r);}vec3 o(vec3 y){return y-floor(y*(1./289.))*289.;}vec4 o(vec4 y){return y-floor(y*(1./289.))*289.;}vec4 e(vec4 y){return o((y*34.+1.)*y);}vec4 v(vec4 l){return 1.79284291400159-.85373472095314*l;}float i(vec3 n){const vec2 s=vec2(1./6.,1./3.);const vec4 a=vec4(0.,.5,1.,2.);vec3 x=floor(n+dot(n,s.yyy)),u=n-x+dot(x,s.xxx),d=step(u.yzx,u.xyz),f=1.-d,z=min(d.xyz,f.zxy),w=max(d.xyz,f.zxy),m=u-z+s.xxx,p=u-w+s.yyy,C=u-a.yyy;x=o(x);vec4 S=e(e(e(x.z+vec4(0.,z.z,w.z,1.))+x.y+vec4(0.,z.y,w.y,1.))+x.x+vec4(0.,z.x,w.x,1.));vec3 P=.142857142857*a.wyz-a.xzx;vec4 F=S-49.*floor(S*P.z*P.z),R=floor(F*P.z),L=floor(F-7.*R),y=R*P.x+P.yyyy,b=L*P.x+P.yyyy,W=1.-abs(y)-abs(b),G=vec4(y.xy,b.xy),q=vec4(y.zw,b.zw),h=floor(G)*2.+1.,g=floor(q)*2.+1.,O=-step(W,vec4(0.)),B=G.xzyw+h.xzyw*O.xxyy,A=q.xzyw+g.xzyw*O.zzww;vec3 E=vec3(B.xy,W.x),k=vec3(B.zw,W.y),Z=vec3(A.xy,W.z),Y=vec3(A.zw,W.w);vec4 X=v(vec4(dot(E,E),dot(k,k),dot(Z,Z),dot(Y,Y)));E*=X.x;k*=X.y;Z*=X.z;Y*=X.w;vec4 V=max(.6-vec4(dot(u,u),dot(m,m),dot(p,p),dot(C,C)),0.);V=V*V;return 42.*dot(V*V,vec4(dot(E,u),dot(k,m),dot(Z,p),dot(Y,C)));}uniform mediump vec2 u_Resolution;uniform float u_Amplitude,u_Realtime,u_Seed;uniform vec3 u_BaseColor;uniform struct WaveLayers{vec3 color;bool isSet;float noiseCeil;float noiseFloor;float noiseFlow;vec2 noiseFreq;float noiseSeed;float noiseSpeed;} u_WaveLayers[9];in vec3 a_Position;out vec3 v_Color;void main(){float U=u_Realtime*5e-6;vec2 T=vec2(.00014,.00029),Q=u_Resolution*a_Position.xy*T;float N=u_Amplitude*(2./u_Resolution.y),M=i(vec3(Q.x*3.+U*3.,Q.y*4.,U*10.+u_Seed));M*=1.-pow(abs(a_Position.y),2.);M=max(0.,M);gl_Position=vec4(a_Position.x,a_Position.y+M*N,a_Position.z,1.);v_Color=u_BaseColor;for(int x=0;x<9;x++){if(!u_WaveLayers[x].isSet)break;WaveLayers K=u_WaveLayers[x];float M=i(vec3(Q.x*K.noiseFreq.x+U*K.noiseFlow,Q.y*K.noiseFreq.y,U*K.noiseSpeed+K.noiseSeed));M=M/2.+.5;M=smoothstep(K.noiseFloor,K.noiseCeil,M);v_Color=o(v_Color,K.color,pow(M,4.));}}
 `;
 
-export const color_frag = `#version 300 es
+export const frag = `#version 300 es
 precision mediump float;uniform vec2 u_Resolution;uniform float u_ShadowPower;in vec3 v_Color;out vec4 color;void main(){vec2 J=gl_FragCoord.xy/u_Resolution.xy;color=vec4(v_Color,1.);color.y-=pow(J.y+sin(-12.)*J.x,u_ShadowPower)*.4;}
 `;
