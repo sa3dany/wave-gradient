@@ -21,9 +21,9 @@ import { noise_vert, color_frag } from "./shaders";
  *
  * @typedef {object} WaveGradientOptions
  * @property {number} amplitude - Amplitude of the wave.
- * @property {Array<string>} colors - Array of colors to use for the.
+ * @property {string[]} colors - Array of colors to use for the.
  *   gradient. Limited to 10 colors.
- * @property {Array<number>} density - Level of detail of the plane
+ * @property {number[]} density - Level of detail of the plane
  *   gemotery in the x & z directions.
  * @property {number} fps - animation FPS.
  * @property {number} seed - Seed for the noise function.
@@ -39,7 +39,6 @@ import { noise_vert, color_frag } from "./shaders";
 /**
  * Default options.
  *
- * @default
  * @type {WaveGradientOptions}
  */
 const DEFAULT_OPTIONS = {
@@ -152,24 +151,6 @@ function createGeometry(width, depth, density) {
 }
 
 /**
- * Resize a canvas to match the size it's displayed. Copied from
- * TWGL.js by greggman.
- *
- * @param {HTMLCanvasElement} canvas The canvas to resize.
- * @returns {boolean} true if the canvas was resized.
- */
-function resizeCanvas(canvas) {
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
-  if (canvas.width !== width || canvas.height !== height) {
-    canvas.width = width;
-    canvas.height = height;
-    return true;
-  }
-  return false;
-}
-
-/**
  * Creates a WebGL context.
  *
  * @param {HTMLCanvasElement} canvas canvas element
@@ -224,10 +205,10 @@ function createProgram(gl, vertexShaderSource, fragmentShaderSource) {
   }
 
   gl.shaderSource(vertexShader, vertexShaderSource);
-  gl.compileShader(vertexShader);
-  gl.attachShader(program, vertexShader);
   gl.shaderSource(fragmentShader, fragmentShaderSource);
+  gl.compileShader(vertexShader);
   gl.compileShader(fragmentShader);
+  gl.attachShader(program, vertexShader);
   gl.attachShader(program, fragmentShader);
 
   gl.linkProgram(program);
@@ -437,10 +418,19 @@ export class WaveGradient {
    * @param {WaveGradientOptions} options - gradient options
    */
   constructor(canvas, options = DEFAULT_OPTIONS) {
+    /**
+     * The time the animation has been running in milliseconds. Can be
+     * set while the animation is running to seek to a specific point in
+     * the animation.
+     *
+     * @type {number}
+     */
+    this.time = options.time ?? DEFAULT_OPTIONS.time;
+
+    /** @private */
     this.gl = createContext(canvas);
 
-    resizeCanvas(canvas);
-    this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
+    this.resize();
 
     this.options = getOptions(options);
     this.program = createProgram(this.gl, noise_vert, color_frag);
@@ -454,24 +444,29 @@ export class WaveGradient {
     this.lastFrameTime = 0;
 
     /** @private */
-    this.paused = false;
-
-    /** @private */
-    this.destroyed = false;
-
-    /**
-     * The time the animation has been running in milliseconds. Can be
-     * set while the animation is running to seek to a specific point in
-     * the animation.
-     *
-     * @public
-     * @type {number}
-     */
-    this.time = this.options.time;
+    this.shouldRender = true;
 
     requestAnimationFrame((now) => {
       this.render(now);
     });
+  }
+
+  /**
+   * Resize a canvas to match the size it's displayed. Copied from
+   * TWGL.js by greggman.
+   *
+   * @private
+   * @returns {boolean} true if the canvas was resized.
+   */
+  resize() {
+    const canvas = this.gl.canvas;
+    const { width, height } = canvas;
+    const { clientWidth, clientHeight } = canvas;
+    if (width === clientWidth && height === clientHeight) return false;
+    this.gl.viewport(0, 0, clientWidth, clientHeight);
+    canvas.width = clientWidth;
+    canvas.height = clientHeight;
+    return true;
   }
 
   /**
@@ -481,68 +476,66 @@ export class WaveGradient {
    * @param {DOMHighResTimeStamp} now - Current frame timestamp
    */
   render(now) {
-    if (this.destroyed) {
-      return;
-    }
-
-    if (!this.paused) {
+    if (this.shouldRender) {
       requestAnimationFrame((now) => {
         this.render(now);
       });
+    } else {
+      return;
     }
 
     const delta = now - this.lastFrameTime;
-
-    if (delta > this.frameInterval) {
-      // I leanred this trick to get a more acurate framerate from:
-      // https://gist.github.com/addyosmani/5434533
-      this.lastFrameTime = now - (delta % this.frameInterval);
-
-      // set program
-      // this.gl.useProgram(this.program);
-
-      // Update the `time` uniform
-      this.time += Math.min(delta, this.frameInterval) * this.options.speed;
-      this.uniforms.u_Realtime.set(this.time);
-
-      if (resizeCanvas(this.gl.canvas)) {
-        // Update the canvas viewport, `resolution` uniform & geometry if
-        // the size of the canvas changed
-        const { clientWidth, clientHeight } = this.gl.canvas;
-
-        this.gl.viewport(0, 0, clientWidth, clientHeight);
-        this.uniforms.u_Resolution.set([clientWidth, clientHeight]);
-
-        const geometry = createGeometry(
-          clientWidth,
-          clientHeight,
-          this.options.density
-        );
-
-        this.gl.bufferData(
-          this.gl.ARRAY_BUFFER,
-          geometry.positions,
-          this.gl.STATIC_DRAW
-        );
-        this.gl.bufferData(
-          this.gl.ELEMENT_ARRAY_BUFFER,
-          geometry.indices,
-          this.gl.STATIC_DRAW
-        );
-
-        this.attributes.a_Position.indexData = geometry.indices;
-      }
-
-      // Prepare for & execute the WEBGL draw call
-      this.gl.drawElements(
-        this.options.wireframe ? this.gl.LINES : this.gl.TRIANGLES,
-        this.attributes.a_Position.indexData.byteLength / 4,
-        this.gl.UNSIGNED_INT,
-        0
-      );
+    if (delta < this.frameInterval) {
+      return;
     }
+
+    // I leanred this trick to get a more acurate framerate from:
+    // https://gist.github.com/addyosmani/5434533
+    this.lastFrameTime = now - (delta % this.frameInterval);
+
+    // Update the `time` uniform
+    this.time += Math.min(delta, this.frameInterval) * this.options.speed;
+    this.uniforms.u_Realtime.set(this.time);
+
+    if (this.resize()) {
+      // Update the canvas viewport, `resolution` uniform & geometry if
+      // the size of the canvas changed
+      const { clientWidth, clientHeight } = this.gl.canvas;
+
+      this.uniforms.u_Resolution.set([clientWidth, clientHeight]);
+
+      const geometry = createGeometry(
+        clientWidth,
+        clientHeight,
+        this.options.density
+      );
+
+      this.gl.bufferData(
+        this.gl.ARRAY_BUFFER,
+        geometry.positions,
+        this.gl.STATIC_DRAW
+      );
+      this.gl.bufferData(
+        this.gl.ELEMENT_ARRAY_BUFFER,
+        geometry.indices,
+        this.gl.STATIC_DRAW
+      );
+
+      this.attributes.a_Position.indexData = geometry.indices;
+    }
+
+    // Prepare for & execute the WEBGL draw call
+    this.gl.drawElements(
+      this.options.wireframe ? this.gl.LINES : this.gl.TRIANGLES,
+      this.attributes.a_Position.indexData.byteLength / 4,
+      this.gl.UNSIGNED_INT,
+      0
+    );
   }
 
+  /**
+   * Clears resources used by the gradient instance and stops rendering.
+   */
   destroy() {
     // Delete attribute buffers
     for (const [, attribute] of Object.entries(this.attributes)) {
@@ -553,8 +546,7 @@ export class WaveGradient {
     // Delete the program
     this.gl.deleteProgram(this.program);
 
-    // Set the `destroyed` state to true to end the
-    // `requestAnimationFrame` calls
-    this.destroyed = true;
+    // stop rendering. break the requestAnimationFrame loop.
+    this.shouldRender = false;
   }
 }
