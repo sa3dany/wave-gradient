@@ -1,4 +1,5 @@
 // @ts-check
+
 import { vert, frag } from "./shaders";
 
 // ---------------------------------------------------------------------
@@ -333,35 +334,38 @@ function createUniforms(gl, options) {
 // ---------------------------------------------------------------------
 
 /**
- * For reference, the original stripe gradient preset values were:
- *
- * time:                   1253106
- * shadow_power:           6 {canvas.y < 600 ? 5 : 6}
- * global.noiseSpeed:      5e-6
- * global.noiseFreq:      [14e-5, 29e-5]
- * vertDeform.noiseFreq:  [3, 4]
- * vertDeform.noiseSpeed:  10
- * vertDeform.noiseFlow:   3
- * vertDeform.noiseSeed:   5
- * vertDeform.noiseAmp:    320
- *
- * for (i = 1; i < sectionColors.length; i++):
- *   color:      sectionColors[i]
- *   noiseCeil:  0.63 + (0.07 * i),
- *   noiseFloor: 0.1,
- *   noiseFlow:  6.5 + (0.3 * i),
- *   noiseFreq: [2 + (i / sectionColors.length),
- *               3 + (i / sectionColors.length)]
- *   noiseSeed:  seed + (10 * i),
- *   noiseSpeed: 11 + (0.3 * i),
- */
-
-/**
- * Class that recreates the https://stripe.com animated gradient. Some
- * inspiration from [vaneenige's Phenomenon
- * library](https://github.com/vaneenige/phenomenon).
+ * Class that recreates the https://stripe.com animated gradient.
  */
 export class WaveGradient {
+  /**
+   * Some inspiration from [vaneenige's Phenomenon
+   * library](https://github.com/vaneenige/phenomenon).
+   */
+
+  /**
+   * For reference, the original stripe gradient preset values were:
+   *
+   * time:                   1253106
+   * shadow_power:           6 {canvas.y < 600 ? 5 : 6}
+   * global.noiseSpeed:      5e-6
+   * global.noiseFreq:      [14e-5, 29e-5]
+   * vertDeform.noiseFreq:  [3, 4]
+   * vertDeform.noiseSpeed:  10
+   * vertDeform.noiseFlow:   3
+   * vertDeform.noiseSeed:   5
+   * vertDeform.noiseAmp:    320
+   *
+   * for (i = 1; i < sectionColors.length; i++):
+   *   color:      sectionColors[i]
+   *   noiseCeil:  0.63 + (0.07 * i),
+   *   noiseFloor: 0.1,
+   *   noiseFlow:  6.5 + (0.3 * i),
+   *   noiseFreq: [2 + (i / sectionColors.length),
+   *               3 + (i / sectionColors.length)]
+   *   noiseSeed:  seed + (10 * i),
+   *   noiseSpeed: 11 + (0.3 * i),
+   */
+
   /**
    * Create a gradient instance. The element can be canvas HTML element
    * or a css query, in which case the first matching element will be
@@ -381,15 +385,6 @@ export class WaveGradient {
       time = 0,
       wireframe = false,
     } = options ?? {};
-
-    /**
-     * The time the animation has been running in milliseconds. Can be
-     * set while the animation is running to seek to a specific point in
-     * the animation.
-     *
-     * @type {number}
-     */
-    this.time = time;
 
     /** @private */
     this.gl = createContext(canvas);
@@ -420,6 +415,15 @@ export class WaveGradient {
 
     /** @private */
     this.shouldRender = true;
+
+    /**
+     * The time the animation has been running in milliseconds. Can be
+     * set while the animation is running to seek to a specific point in
+     * the animation.
+     *
+     * @type {number}
+     */
+    this.time = time;
 
     this.resize();
     requestAnimationFrame((now) => {
@@ -502,8 +506,9 @@ export class WaveGradient {
       this.gl.deleteBuffer(attribute.indexBuffer);
     }
 
-    // Delete the program
+    // Delete the program and context reference
     this.gl.deleteProgram(this.program);
+    this.gl = null;
 
     // stop rendering. break the requestAnimationFrame loop.
     this.shouldRender = false;
