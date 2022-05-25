@@ -103,38 +103,6 @@ function createGeometry(width, depth, density) {
 }
 
 /**
- * Creates a WebGL context.
- *
- * @param {HTMLCanvasElement} canvas canvas element
- * @returns {WebGL2RenderingContext} rendering context
- */
-function createContext(canvas) {
-  const gl = canvas.getContext("webgl2", {
-    antialias: true,
-    depth: false,
-    powerPreference: "low-power",
-  });
-
-  if (!gl) {
-    throw new Error("Could not acquire a WEBGL2 context");
-  }
-
-  // Enable culling of back triangle faces
-  gl.enable(gl.CULL_FACE);
-
-  // Not-needed since I am using atleast `mediump` precicion in the
-  // fragment shader
-  gl.disable(gl.DITHER);
-
-  // Enablig depth testing hurts performance in my testing. It is
-  // disabled by default but I am just making the choise explicit for
-  // documentation
-  gl.disable(gl.DEPTH_TEST);
-
-  return gl;
-}
-
-/**
  * Creates a WebGL program.
  *
  * @param {WebGLRenderingContext} gl rendering context
@@ -175,6 +143,8 @@ function createProgram(gl, vertexShaderSource, fragmentShaderSource) {
   }
 
   // cleanup
+  gl.detachShader(program, vertexShader);
+  gl.detachShader(program, fragmentShader);
   gl.deleteShader(vertexShader);
   gl.deleteShader(fragmentShader);
 
@@ -376,6 +346,15 @@ export class WaveGradient {
    * @param {WaveGradientOptions} options - gradient options
    */
   constructor(canvas, options) {
+    // get a WebGL2 rendering context
+    const gl = canvas.getContext("webgl2", {
+      antialias: true,
+      depth: false,
+      powerPreference: "low-power",
+    });
+    if (!gl) throw new Error("can't get WebGL2 context");
+
+    // mix in default options
     const {
       amplitude = 320,
       colors = ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"],
@@ -388,7 +367,7 @@ export class WaveGradient {
     } = options ?? {};
 
     /** @private */
-    this.gl = createContext(canvas);
+    this.gl = gl;
 
     /** @private */
     this.program = createProgram(this.gl, vert, frag);
@@ -426,7 +405,22 @@ export class WaveGradient {
      */
     this.time = time;
 
+    // Enable culling of back triangle faces
+    gl.enable(gl.CULL_FACE);
+
+    // Not-needed since I am using atleast `mediump` precicion in the
+    // fragment shader
+    gl.disable(gl.DITHER);
+
+    // Enablig depth testing hurts performance in my testing. It is
+    // disabled by default but I am just making the choise explicit for
+    // documentation
+    gl.disable(gl.DEPTH_TEST);
+
+    // Resize the canvas to the size of the window
     this.resize();
+
+    // Start the render loop
     requestAnimationFrame((now) => {
       this.render(now);
     });
