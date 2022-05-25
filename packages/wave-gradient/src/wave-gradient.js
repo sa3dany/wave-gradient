@@ -11,37 +11,17 @@ import { vert, frag } from "./shaders";
  * WaveGradient options.
  *
  * @typedef {object} WaveGradientOptions
- * @property {number} amplitude - Amplitude of the wave.
- * @property {string[]} colors - Array of colors to use for the.
+ * @property {number} [amplitude] - Amplitude of the wave.
+ * @property {string[]} [colors] - Array of colors to use for the.
  *   gradient. Limited to 10 colors.
- * @property {number[]} density - Level of detail of the plane
+ * @property {number[]} [density] - Level of detail of the plane
  *   gemotery in the x & z directions.
- * @property {number} fps - animation FPS.
- * @property {number} seed - Seed for the noise function.
- * @property {number} speed - Speed of the waves.
- * @property {number} time - Time of the animation.
- * @property {boolean} wireframe - Wireframe rendering mode.
+ * @property {number} [fps] - animation FPS.
+ * @property {number} [seed] - Seed for the noise function.
+ * @property {number} [speed] - Speed of the waves.
+ * @property {number} [time] - Time of the animation.
+ * @property {boolean} [wireframe] - Wireframe rendering mode.
  */
-
-// ---------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------
-
-/**
- * Default options.
- *
- * @type {WaveGradientOptions}
- */
-const DEFAULT_OPTIONS = {
-  amplitude: 320,
-  colors: ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"],
-  density: [0.06, 0.16],
-  fps: 24,
-  seed: 0,
-  speed: 1.25,
-  time: 0,
-  wireframe: false,
-};
 
 // ---------------------------------------------------------------------
 // Helper functions
@@ -66,26 +46,6 @@ function rgbTo3f(hexString) {
     const b = parseInt(hex.charAt(4) + hex.charAt(5), 16) / 255;
     return [r, g, b];
   }
-}
-
-/**
- * Mix default and provided options and return an object with the full
- * options set with default values for missing options.
- *
- * @param {object} options - Provided options
- * @returns {WaveGradientOptions} Wave gradients options
- */
-function getOptions(options) {
-  const allOptions = { ...DEFAULT_OPTIONS };
-  if (!options) {
-    return allOptions;
-  }
-  Object.keys(DEFAULT_OPTIONS).forEach((name) => {
-    if (options[name] !== undefined) {
-      allOptions[name] = options[name];
-    }
-  });
-  return allOptions;
 }
 
 /**
@@ -275,21 +235,21 @@ function createUniforms(gl, options) {
   }
 
   const uniforms = {
+    u_Amplitude: {
+      value: options.amplitude,
+      type: "1f",
+    },
     u_BaseColor: {
       value: rgbTo3f(options.colors[0]),
       type: "3f",
-    },
-    u_Resolution: {
-      value: [gl.canvas.clientWidth, gl.canvas.clientHeight],
-      type: "2f",
     },
     u_Realtime: {
       value: options.time,
       type: "1f",
     },
-    u_Amplitude: {
-      value: options.amplitude,
-      type: "1f",
+    u_Resolution: {
+      value: [gl.canvas.clientWidth, gl.canvas.clientHeight],
+      type: "2f",
     },
     u_Seed: {
       value: options.seed,
@@ -397,7 +357,9 @@ function createUniforms(gl, options) {
  */
 
 /**
- * Class that recreates the https://stripe.com animated gradient.
+ * Class that recreates the https://stripe.com animated gradient. Some
+ * inspiration from [vaneenige's Phenomenon
+ * library](https://github.com/vaneenige/phenomenon).
  */
 export class WaveGradient {
   /**
@@ -408,7 +370,18 @@ export class WaveGradient {
    * @param {HTMLCanvasElement} canvas - canvas element
    * @param {WaveGradientOptions} options - gradient options
    */
-  constructor(canvas, options = DEFAULT_OPTIONS) {
+  constructor(canvas, options) {
+    const {
+      amplitude = 320,
+      colors = ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"],
+      density = [0.06, 0.16],
+      fps = 24,
+      seed = 0,
+      speed = 1.25,
+      time = 0,
+      wireframe = false,
+    } = options ?? {};
+
     /**
      * The time the animation has been running in milliseconds. Can be
      * set while the animation is running to seek to a specific point in
@@ -416,20 +389,31 @@ export class WaveGradient {
      *
      * @type {number}
      */
-    this.time = options.time ?? DEFAULT_OPTIONS.time;
+    this.time = time;
 
     /** @private */
     this.gl = createContext(canvas);
 
-    this.resize();
-
-    this.options = getOptions(options);
+    /** @private */
     this.program = createProgram(this.gl, vert, frag);
-    this.attributes = createAttributes(this.gl, this.options);
-    this.uniforms = createUniforms(this.gl, this.options);
 
     /** @private */
-    this.frameInterval = 1000 / this.options.fps;
+    this.attributes = createAttributes(this.gl, { density });
+
+    /** @private */
+    this.uniforms = createUniforms(this.gl, { amplitude, colors, seed, speed });
+
+    /** @private */
+    this.density = density;
+
+    /** @private */
+    this.speed = speed;
+
+    /** @private */
+    this.wireframe = wireframe;
+
+    /** @private */
+    this.frameInterval = 1000 / fps;
 
     /** @private */
     this.lastFrameTime = 0;
@@ -437,6 +421,7 @@ export class WaveGradient {
     /** @private */
     this.shouldRender = true;
 
+    this.resize();
     requestAnimationFrame((now) => {
       this.render(now);
     });
@@ -447,17 +432,23 @@ export class WaveGradient {
    * TWGL.js by greggman.
    *
    * @private
-   * @returns {boolean} true if the canvas was resized.
    */
   resize() {
-    const canvas = this.gl.canvas;
-    const { width, height } = canvas;
+    const { gl, gl: { canvas } } = this; // prettier-ignore
     const { clientWidth, clientHeight } = canvas;
-    if (width === clientWidth && height === clientHeight) return false;
-    this.gl.viewport(0, 0, clientWidth, clientHeight);
-    canvas.width = clientWidth;
-    canvas.height = clientHeight;
-    return true;
+
+    // update the canvas size, viewport, `resolution` uniform and plane
+    // geometry if the size of the canvas changed
+    if (canvas.width !== clientWidth || canvas.height !== clientHeight) {
+      canvas.width = clientWidth;
+      canvas.height = clientHeight;
+      gl.viewport(0, 0, clientWidth, clientHeight);
+      this.uniforms.u_Resolution.set([clientWidth, clientHeight]);
+      const geometry = createGeometry(clientWidth, clientHeight, this.density);
+      gl.bufferData(gl.ARRAY_BUFFER, geometry.positions, gl.STATIC_DRAW);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.indices, gl.STATIC_DRAW);
+      this.attributes.a_Position.indexData = geometry.indices;
+    }
   }
 
   /**
@@ -485,39 +476,16 @@ export class WaveGradient {
     this.lastFrameTime = now - (delta % this.frameInterval);
 
     // Update the `time` uniform
-    this.time += Math.min(delta, this.frameInterval) * this.options.speed;
+    this.time += Math.min(delta, this.frameInterval) * this.speed;
     this.uniforms.u_Realtime.set(this.time);
 
-    if (this.resize()) {
-      // Update the canvas viewport, `resolution` uniform & geometry if
-      // the size of the canvas changed
-      const { clientWidth, clientHeight } = this.gl.canvas;
-
-      this.uniforms.u_Resolution.set([clientWidth, clientHeight]);
-
-      const geometry = createGeometry(
-        clientWidth,
-        clientHeight,
-        this.options.density
-      );
-
-      this.gl.bufferData(
-        this.gl.ARRAY_BUFFER,
-        geometry.positions,
-        this.gl.STATIC_DRAW
-      );
-      this.gl.bufferData(
-        this.gl.ELEMENT_ARRAY_BUFFER,
-        geometry.indices,
-        this.gl.STATIC_DRAW
-      );
-
-      this.attributes.a_Position.indexData = geometry.indices;
-    }
+    // I opted for this approsh instead of registering a callback on
+    // `resize`
+    this.resize();
 
     // Prepare for & execute the WEBGL draw call
     this.gl.drawElements(
-      this.options.wireframe ? this.gl.LINES : this.gl.TRIANGLES,
+      this.wireframe ? this.gl.LINES : this.gl.TRIANGLES,
       this.attributes.a_Position.indexData.byteLength / 4,
       this.gl.UNSIGNED_INT,
       0
