@@ -166,10 +166,12 @@ function createProgram(gl, vertexShaderSource, fragmentShaderSource) {
   gl.linkProgram(program);
   if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
     gl.deleteProgram(program);
-    console.error(gl.getProgramInfoLog(program));
-    console.error(gl.getShaderInfoLog(vertexShader));
-    console.error(gl.getShaderInfoLog(fragmentShader));
-    throw new Error("Could not link WebGL program");
+    throw new Error(
+      `Could not link WebGL program.
+      ${gl.getProgramInfoLog(program)}
+      ${gl.getShaderInfoLog(vertexShader)}
+      ${gl.getShaderInfoLog(fragmentShader)}`
+    );
   }
 
   // cleanup
@@ -177,7 +179,6 @@ function createProgram(gl, vertexShaderSource, fragmentShaderSource) {
   gl.deleteShader(fragmentShader);
 
   gl.useProgram(program);
-
   return program;
 }
 
