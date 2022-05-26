@@ -82,47 +82,6 @@ function createGeometry(width, depth, density) {
 }
 
 /**
- * Creates the attributes for the WebGL program.
- *
- * @param {WebGL2RenderingContext} gl rendering context
- * @param {WaveGradientOptions} options options
- * @returns {object} attributes
- */
-function createAttributes(gl, options) {
-  const program = gl.getParameter(gl.CURRENT_PROGRAM);
-  if (!program) {
-    throw new Error("Could not get active WebGL program");
-  }
-
-  const geometry = createGeometry(
-    gl.canvas.clientWidth,
-    gl.canvas.clientHeight,
-    options.density
-  );
-
-  const attributes = {
-    a_Position: {
-      arrayBuffer: gl.createBuffer(),
-      arrayData: geometry.positions,
-      indexBuffer: gl.createBuffer(),
-      indexData: geometry.indices,
-      location: gl.getAttribLocation(program, "a_Position"),
-    },
-  };
-
-  for (const [, attribute] of Object.entries(attributes)) {
-    gl.bindBuffer(gl.ARRAY_BUFFER, attribute.arrayBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, attribute.arrayData, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, attribute.indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, attribute.indexData, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(attribute.location);
-    gl.vertexAttribPointer(attributes.location, 3, gl.FLOAT, false, 0, 0);
-  }
-
-  return attributes;
-}
-
-/**
  * Creates the uniforms for the WebGL program.
  *
  * @param {WebGL2RenderingContext} gl rendering context
@@ -239,21 +198,62 @@ function createUniforms(gl, options) {
  */
 class ClipSpace {
   /**
-   * @param {{
-   *   gl: WebGL2RenderingContext;
-   *   shaders: [string, string];
-   *   attributes: any;
-   *   uniforms: any;
-   * }} config configuration
+   * Prefixes attribute or uniform names with the given prefix. While
+   * also making the name sentence cased.
+   *
+   * @private
+   * @param {string} name attribute/uniform name
+   * @param {string} prefix prefix
+   * @returns {string} prefixed name
    */
-  constructor(config) {
-    this.gl = config.gl;
-    this.program = this.createProgram(config.shaders);
-    // this.attributes = this.createAttributes(config.attributes);
-    // this.uniforms = this.createUniforms(config.uniforms);
+  static prefixName(name, prefix) {
+    return `${prefix}${name[0].toUpperCase()}${name.slice(1)}`;
   }
 
   /**
+   * @typedef {{
+   *   gl: WebGL2RenderingContext,
+   *   shaders: [string, string],
+   *   attributes: Object<string, ArrayBuffer>,
+   *   elements: ArrayBuffer,
+   *   uniforms: any,
+   * }} ClipSpaceConfig ClipSpace configuration
+   */
+
+  /**
+   * @param {ClipSpaceConfig} config configuration
+   */
+  constructor(config) {
+    /** @private */
+    this.gl = config.gl;
+
+    /** @private */
+    this.program = this.createProgram(config.shaders);
+
+    /**
+     * @private
+     * @type {Object<string, AttributeInfo>}
+     */
+    this._attributes = {};
+
+    /** @private */
+    this.setupAttributes(config.attributes);
+
+    /**
+     * @private
+     * @type {WebGLBuffer}
+     */
+    this._elementBuffer;
+
+    /** @private */
+    this.setElements(config.elements);
+
+    // /** @private */
+    // this.setupUniforms(config.uniforms);
+  }
+
+  /**
+   * @private
    * @param {number} type shader type
    * @param {string} source shader source
    * @returns {WebGLShader} shader
@@ -271,6 +271,7 @@ class ClipSpace {
   }
 
   /**
+   * @private
    * @param {WebGLProgram} program WebGL2 program
    * @throws {Error} if the program did not link successfully
    * @returns {void}
@@ -291,6 +292,7 @@ class ClipSpace {
   /**
    * Creates a WebGL program.
    *
+   * @private
    * @param {[string, string]} shaders vertex & fragment shader sources
    * @returns {WebGLProgram} shader program
    */
@@ -324,11 +326,77 @@ class ClipSpace {
   }
 
   /**
+   * @typedef {{ buffer: WebGLBuffer, location: number }} AttributeInfo
+   */
+
+  /**
+   * Creates the attributes for the WebGL program.
+   *
+   * @private
+   * @param {object} attributes attributes
+   */
+  setupAttributes(attributes) {
+    const { gl, program } = this;
+
+    for (const [name, dataBuffer] of Object.entries(attributes)) {
+      const prefixedName = ClipSpace.prefixName(name, "a_");
+
+      const buffer = gl.createBuffer();
+      const location = gl.getAttribLocation(program, prefixedName);
+
+      this._attributes[name] = { buffer, location };
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+      gl.bufferData(gl.ARRAY_BUFFER, dataBuffer, gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(location);
+      gl.vertexAttribPointer(location, 3, gl.FLOAT, false, 0, 0);
+    }
+
+    this.attributes = attributes;
+  }
+
+  /**
+   * Setter for attributes.
+   *
+   * @param {string} attributeName attribute name
+   * @param {ArrayBuffer} dataBuffer ArrayBuffer containing the data
+   */
+  setAttribute(attributeName, dataBuffer) {
+    const { gl } = this;
+
+    // Since there is only one attribute used by the WaveGradient, it's
+    // okay to not call `gl.bindBuffer` before setting the buffer data.
+    // which is why `attributeName` in unused now.
+    gl.bufferData(gl.ARRAY_BUFFER, dataBuffer, gl.STATIC_DRAW);
+  }
+
+  /**
+   * Setup WebGL indexed drawing data buffer.
+   *
+   * @param {ArrayBuffer} elements elements
+   */
+  setElements(elements) {
+    const { gl } = this;
+
+    if (!this._elementBuffer) {
+      const buffer = gl.createBuffer();
+      this._elementBuffer = buffer;
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+    }
+
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elements, gl.STATIC_DRAW);
+  }
+
+  /**
    * Deletes the WebGL program and buffers.
    */
   delete() {
     const { gl } = this;
+
     gl.deleteProgram(this.program);
+    for (const [, attribute] of Object.entries(this._attributes)) {
+      this.gl.deleteBuffer(attribute.buffer);
+    }
   }
 }
 
@@ -422,11 +490,18 @@ export class WaveGradient {
       wireframe = false,
     } = options ?? {};
 
+    const geometry = createGeometry(
+      gl.canvas.clientWidth,
+      gl.canvas.clientHeight,
+      density
+    );
+
     // create the clip space
     const clipSpace = new ClipSpace({
       gl,
       shaders: [vert, frag],
-      attributes: {},
+      attributes: { position: geometry.positions },
+      elements: geometry.indices,
       uniforms: {},
     });
 
@@ -435,9 +510,6 @@ export class WaveGradient {
 
     /** @private */
     this.clipSpace = clipSpace;
-
-    /** @private */
-    this.attributes = createAttributes(this.gl, { density });
 
     /** @private */
     this.uniforms = createUniforms(this.gl, { amplitude, colors, seed, speed });
@@ -449,9 +521,6 @@ export class WaveGradient {
     this.speed = speed;
 
     /** @private */
-    this.wireframe = wireframe;
-
-    /** @private */
     this.frameInterval = 1000 / fps;
 
     /** @private */
@@ -459,6 +528,12 @@ export class WaveGradient {
 
     /** @private */
     this.shouldRender = true;
+
+    /** @private */
+    this.drawMode = wireframe ? this.gl.LINES : this.gl.TRIANGLES;
+
+    /** @private */
+    this.drawCount = geometry.count;
 
     /**
      * The time the animation has been running in milliseconds. Can be
@@ -497,7 +572,7 @@ export class WaveGradient {
    * @private
    */
   resize() {
-    const { gl, gl: { canvas } } = this; // prettier-ignore
+    const { gl, gl: { canvas }, clipSpace } = this; // prettier-ignore
     const { clientWidth, clientHeight } = canvas;
 
     if (canvas.width !== clientWidth || canvas.height !== clientHeight) {
@@ -507,11 +582,15 @@ export class WaveGradient {
       gl.viewport(0, 0, clientWidth, clientHeight);
       this.uniforms.u_Resolution.set([clientWidth, clientHeight]);
 
-      // Update clip space geometry
+      // Create new geometry
       const geometry = createGeometry(clientWidth, clientHeight, this.density);
-      gl.bufferData(gl.ARRAY_BUFFER, geometry.positions, gl.STATIC_DRAW);
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.indices, gl.STATIC_DRAW);
-      this.attributes.a_Position.indexData = geometry.indices;
+
+      // Update geometry attributes
+      clipSpace.setAttribute("position", geometry.positions);
+
+      // Update index buffer and draw count
+      clipSpace.setElements(geometry.indices);
+      this.drawCount = geometry.count;
     }
   }
 
@@ -551,8 +630,8 @@ export class WaveGradient {
 
     // Prepare for & execute the WEBGL draw call
     this.gl.drawElements(
-      this.wireframe ? this.gl.LINES : this.gl.TRIANGLES,
-      this.attributes.a_Position.indexData.byteLength / 4,
+      this.drawMode,
+      this.drawCount,
       this.gl.UNSIGNED_INT,
       0
     );
@@ -562,12 +641,6 @@ export class WaveGradient {
    * Clears resources used by the gradient instance and stops rendering.
    */
   destroy() {
-    // Delete attribute buffers
-    for (const [, attribute] of Object.entries(this.attributes)) {
-      this.gl.deleteBuffer(attribute.arrayBuffer);
-      this.gl.deleteBuffer(attribute.indexBuffer);
-    }
-
     // Delete the clipSpace and context reference
     this.clipSpace.delete();
     this.gl = null;
