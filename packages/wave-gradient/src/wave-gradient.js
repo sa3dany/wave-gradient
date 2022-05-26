@@ -3,7 +3,7 @@
 import { vert, frag } from "./shaders";
 
 // ---------------------------------------------------------------------
-// Helper functions
+// Helpers
 // ---------------------------------------------------------------------
 
 /**
@@ -23,62 +23,6 @@ function parseRGB(hex) {
         return parseInt(c.length < 2 ? c + c : c, 16) / 255;
       })
     : null;
-}
-
-/**
- * Creates the plane geomtery.
- *
- * This plane is created for WEBGL clip space, this means it has a width
- * and depth of 2 and the positions of the vertices go from -1 to 1 in
- * the X and Y axis, while the Z axis goes from 0 to 1 to match the
- * default near and far values for the depth buffer.
- *
- * Note that I am not using the depth buffer since enabling the depth
- * test increases GPU usage (atleat on my laptops's iGPU). Since the
- * depth test is disabled, I had to order the vertices back to front
- * (far to near) to get the correct order of the fragments.
- *
- * @param {number} width Width of the plane
- * @param {number} depth depth of the plane
- * @param {number[]} density Level of detail of the plane geometry
- * @returns {WaveGradientGeometry} Plane geometry
- */
-function createGeometry(width, depth, density) {
-  const gridX = Math.ceil(density[0] * width);
-  const gridZ = Math.ceil(density[0] * depth);
-
-  // Prepare the typed arrays for the indexed geometry
-  const vertexCount = 3 * (gridX + 1) * (gridZ + 1);
-  const indexCount = 3 * 2 * gridX * gridZ;
-  const positions = new ArrayBuffer(4 * vertexCount);
-  const indices = new ArrayBuffer(4 * indexCount);
-
-  // Create the vertex positions
-  for (let z = gridZ, i = 0, view = new DataView(positions); z >= 0; z--) {
-    const v = z / gridZ;
-    const clipY = v * 2 - 1;
-    for (let x = gridX; x >= 0; x--, i += 3) {
-      const clipX = (x / gridX) * 2 - 1;
-      view.setFloat32((i + 0) * 4, clipX, true);
-      view.setFloat32((i + 1) * 4, clipY, true);
-      view.setFloat32((i + 2) * 4, v, true);
-    }
-  }
-
-  // Create the indices
-  const verticesAcross = gridX + 1;
-  for (let z = 0, i = 0, view = new DataView(indices); z < gridZ; z++) {
-    for (let x = 0; x < gridX; x++, i += 6) {
-      view.setUint32((i + 0) * 4, (z + 0) * verticesAcross + x, true);
-      view.setUint32((i + 1) * 4, (z + 0) * verticesAcross + x + 1, true);
-      view.setUint32((i + 2) * 4, (z + 1) * verticesAcross + x, true);
-      view.setUint32((i + 3) * 4, (z + 0) * verticesAcross + x + 1, true);
-      view.setUint32((i + 4) * 4, (z + 1) * verticesAcross + x + 1, true);
-      view.setUint32((i + 5) * 4, (z + 1) * verticesAcross + x, true);
-    }
-  }
-
-  return { positions, indices, count: indexCount };
 }
 
 /**
@@ -438,6 +382,71 @@ export class WaveGradient {
    */
 
   /**
+   * WaveGradient geometry
+   *
+   * @typedef {{
+   *   positions: ArrayBuffer,
+   *   indices: ArrayBuffer,
+   *   count: number
+   * }} WaveGradientGeometry
+   */
+
+  /**
+   * Creates the plane geomtery.
+   *
+   * This plane is created for WEBGL clip space, this means it has a width
+   * and depth of 2 and the positions of the vertices go from -1 to 1 in
+   * the X and Y axis, while the Z axis goes from 0 to 1 to match the
+   * default near and far values for the depth buffer.
+   *
+   * Note that I am not using the depth buffer since enabling the depth
+   * test increases GPU usage (atleat on my laptops's iGPU). Since the
+   * depth test is disabled, I had to order the vertices back to front
+   * (far to near) to get the correct order of the fragments.
+   *
+   * @param {number} widthSegments Width of the plane
+   * @param {number} depthSegments depth of the plane
+   * @returns {WaveGradientGeometry} Plane geometry
+   */
+  static createGeometry(widthSegments, depthSegments) {
+    const gridX = Math.ceil(widthSegments);
+    const gridZ = Math.ceil(depthSegments);
+
+    // Prepare the typed arrays for the indexed geometry
+    const vertexCount = 3 * (gridX + 1) * (gridZ + 1);
+    const indexCount = 3 * 2 * gridX * gridZ;
+    const positions = new ArrayBuffer(4 * vertexCount);
+    const indices = new ArrayBuffer(4 * indexCount);
+
+    // Create the vertex positions
+    for (let z = gridZ, i = 0, view = new DataView(positions); z >= 0; z--) {
+      const v = z / gridZ;
+      const clipY = v * 2 - 1;
+      for (let x = gridX; x >= 0; x--, i += 3) {
+        const clipX = (x / gridX) * 2 - 1;
+        view.setFloat32((i + 0) * 4, clipX, true);
+        view.setFloat32((i + 1) * 4, clipY, true);
+        view.setFloat32((i + 2) * 4, v, true);
+      }
+    }
+
+    // Create the indices
+    const verticesAcross = gridX + 1;
+    for (let z = 0, i = 0, view = new DataView(indices); z < gridZ; z++) {
+      for (let x = 0; x < gridX; x++, i += 6) {
+        view.setUint32((i + 0) * 4, (z + 0) * verticesAcross + x, true);
+        view.setUint32((i + 1) * 4, (z + 0) * verticesAcross + x + 1, true);
+        view.setUint32((i + 2) * 4, (z + 1) * verticesAcross + x, true);
+        view.setUint32((i + 3) * 4, (z + 0) * verticesAcross + x + 1, true);
+        view.setUint32((i + 4) * 4, (z + 1) * verticesAcross + x + 1, true);
+        view.setUint32((i + 5) * 4, (z + 1) * verticesAcross + x, true);
+      }
+    }
+
+    return { positions, indices, count: indexCount };
+  }
+
+  /**
    * WaveGradient options.
    *
    * @typedef {object} WaveGradientOptions
@@ -449,16 +458,6 @@ export class WaveGradient {
    * @property {number} [speed] Speed of the gradient waves.
    * @property {number} [time] Initial time of the animation.
    * @property {boolean} [wireframe] Wireframe render mode.
-   */
-
-  /**
-   * WaveGradient geometry
-   *
-   * @typedef {{
-   *   positions: ArrayBuffer,
-   *   indices: ArrayBuffer,
-   *   count: number
-   * }} WaveGradientGeometry
    */
 
   /**
@@ -490,10 +489,18 @@ export class WaveGradient {
       wireframe = false,
     } = options ?? {};
 
-    const geometry = createGeometry(
-      gl.canvas.clientWidth,
-      gl.canvas.clientHeight,
-      density
+    // get canvas display (css) dimensions
+    const { clientWidth, clientHeight } = canvas;
+
+    // set initial canvas size
+    canvas.width = clientWidth;
+    canvas.height = clientHeight;
+    gl.viewport(0, 0, clientWidth, clientHeight);
+
+    // create the initial plane geometry
+    const geometry = WaveGradient.createGeometry(
+      clientWidth * density[0],
+      clientHeight * density[1]
     );
 
     // create the clip space
@@ -573,9 +580,10 @@ export class WaveGradient {
    */
   resize() {
     const { gl, gl: { canvas }, clipSpace } = this; // prettier-ignore
-    const { clientWidth, clientHeight } = canvas;
+    const { width, clientWidth, height, clientHeight } = canvas;
+    const resized = width !== clientWidth || height !== clientHeight;
 
-    if (canvas.width !== clientWidth || canvas.height !== clientHeight) {
+    if (resized) {
       // Update canvas, viewport and rrsolution uniform
       canvas.width = clientWidth;
       canvas.height = clientHeight;
@@ -583,7 +591,10 @@ export class WaveGradient {
       this.uniforms.u_Resolution.set([clientWidth, clientHeight]);
 
       // Create new geometry
-      const geometry = createGeometry(clientWidth, clientHeight, this.density);
+      const geometry = WaveGradient.createGeometry(
+        clientWidth * this.density[0],
+        clientHeight * this.density[1]
+      );
 
       // Update geometry attributes
       clipSpace.setAttribute("position", geometry.positions);
