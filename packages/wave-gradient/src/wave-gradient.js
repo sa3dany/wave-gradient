@@ -112,56 +112,6 @@ function createGeometry(width, depth, density) {
 }
 
 /**
- * Creates a WebGL program.
- *
- * @param {WebGLRenderingContext} gl rendering context
- * @param {string} vertexShaderSource vertex shader source
- * @param {string} fragmentShaderSource source code for the fragment shader
- * @returns {WebGLProgram} shader program
- */
-function createProgram(gl, vertexShaderSource, fragmentShaderSource) {
-  const program = gl.createProgram();
-  if (!program) {
-    throw new Error("Could not create WebGL program");
-  }
-
-  let vertexShader = gl.createShader(gl.VERTEX_SHADER);
-  let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-  if (!vertexShader || !fragmentShader) {
-    gl.deleteShader(vertexShader);
-    gl.deleteShader(fragmentShader);
-    throw new Error("Could not create shader");
-  }
-
-  gl.shaderSource(vertexShader, vertexShaderSource);
-  gl.shaderSource(fragmentShader, fragmentShaderSource);
-  gl.compileShader(vertexShader);
-  gl.compileShader(fragmentShader);
-  gl.attachShader(program, vertexShader);
-  gl.attachShader(program, fragmentShader);
-
-  gl.linkProgram(program);
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    gl.deleteProgram(program);
-    throw new Error(
-      `Could not link WebGL program.
-      ${gl.getProgramInfoLog(program)}
-      ${gl.getShaderInfoLog(vertexShader)}
-      ${gl.getShaderInfoLog(fragmentShader)}`
-    );
-  }
-
-  // cleanup
-  gl.detachShader(program, vertexShader);
-  gl.detachShader(program, fragmentShader);
-  gl.deleteShader(vertexShader);
-  gl.deleteShader(fragmentShader);
-
-  gl.useProgram(program);
-  return program;
-}
-
-/**
  * Creates the attributes for the WebGL program.
  *
  * @param {WebGL2RenderingContext} gl rendering context
@@ -314,8 +264,97 @@ function createUniforms(gl, options) {
 // ---------------------------------------------------------------------
 
 class ClipSpace {
-  constructor() {
-    //
+  /**
+   * @param {{
+   *   gl: WebGL2RenderingContext;
+   *   shaders: [string, string];
+   *   attributes: any;
+   *   uniforms: any;
+   * }} config configuration
+   */
+  constructor(config) {
+    this.gl = config.gl;
+    this.program = this.createProgram(config.shaders);
+    // this.attributes = this.createAttributes(config.attributes);
+    // this.uniforms = this.createUniforms(config.uniforms);
+  }
+
+  /**
+   * @param {number} type shader type
+   * @param {string} source shader source
+   * @returns {WebGLShader} shader
+   */
+  compileShader(type, source) {
+    const { gl } = this;
+
+    let shader = gl.createShader(type);
+    if (!shader) throw new Error("can't create shader");
+
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+
+    return shader;
+  }
+
+  /**
+   * @param {WebGLProgram} program WebGL2 program
+   * @throws {Error} if the program did not link successfully
+   * @returns {void}
+   */
+  debugPorgram(program) {
+    const { gl } = this;
+    const [vs, fs] = gl.getAttachedShaders(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      throw new Error(
+        `can't link WebGL program.
+    ${gl.getProgramInfoLog(program)}
+    ${gl.getShaderInfoLog(vs)}
+    ${gl.getShaderInfoLog(fs)}`
+      );
+    }
+  }
+
+  /**
+   * Creates a WebGL program.
+   *
+   * @param {[string, string]} shaders vertex & fragment shader sources
+   * @returns {WebGLProgram} shader program
+   */
+  createProgram(shaders) {
+    const { gl } = this;
+    const [vs, fs] = [
+      this.compileShader(gl.VERTEX_SHADER, shaders[0]),
+      this.compileShader(gl.FRAGMENT_SHADER, shaders[1]),
+    ];
+
+    const program = gl.createProgram();
+    if (!program) throw new Error("can't create WebGL program");
+
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+
+    try {
+      gl.linkProgram(program);
+      this.debugPorgram(program);
+    } catch (linkError) {
+      gl.deleteProgram(program);
+      throw linkError;
+    } finally {
+      gl.deleteShader(vs);
+      gl.deleteShader(fs);
+    }
+
+    gl.useProgram(program);
+
+    return program;
+  }
+
+  /**
+   * Deletes the WebGL program and buffers.
+   */
+  delete() {
+    const { gl } = this;
+    gl.deleteProgram(this.program);
   }
 }
 
@@ -385,11 +424,19 @@ export class WaveGradient {
       wireframe = false,
     } = options ?? {};
 
+    // create the clip space
+    const clipSpace = new ClipSpace({
+      gl,
+      shaders: [vert, frag],
+      attributes: {},
+      uniforms: {},
+    });
+
     /** @private */
     this.gl = gl;
 
     /** @private */
-    this.program = createProgram(this.gl, vert, frag);
+    this.clipSpace = clipSpace;
 
     /** @private */
     this.attributes = createAttributes(this.gl, { density });
@@ -520,8 +567,8 @@ export class WaveGradient {
       this.gl.deleteBuffer(attribute.indexBuffer);
     }
 
-    // Delete the program and context reference
-    this.gl.deleteProgram(this.program);
+    // Delete the clipSpace and context reference
+    this.clipSpace.delete();
     this.gl = null;
 
     // stop rendering. break the requestAnimationFrame loop.
