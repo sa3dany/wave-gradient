@@ -9,19 +9,27 @@ import { vert, frag } from "./shaders";
 /** @typedef {number} DOMHighResTimeStamp */
 
 /**
+ * WaveGradient geometry
+ *
+ * @typedef {{
+ *   positions: ArrayBuffer,
+ *   indices: ArrayBuffer,
+ *   count: number
+ * }} WaveGradientGeometry
+ */
+
+/**
  * WaveGradient options.
  *
  * @typedef {object} WaveGradientOptions
- * @property {number} [amplitude] - Amplitude of the wave.
- * @property {string[]} [colors] - Array of colors to use for the.
- *   gradient. Limited to 10 colors.
- * @property {number[]} [density] - Level of detail of the plane
- *   gemotery in the x & z directions.
- * @property {number} [fps] - animation FPS.
- * @property {number} [seed] - Seed for the noise function.
- * @property {number} [speed] - Speed of the waves.
- * @property {number} [time] - Time of the animation.
- * @property {boolean} [wireframe] - Wireframe rendering mode.
+ * @property {number} [amplitude] Gradient waves amplitude.
+ * @property {string[]} [colors] Gradient color layers. Limited to 10.
+ * @property {number[]} [density] Level of detail of the plane gemotery.
+ * @property {number} [fps] Frames per second for rendering.
+ * @property {number} [seed] Seed for the noise function.
+ * @property {number} [speed] Speed of the gradient waves.
+ * @property {number} [time] Initial time of the animation.
+ * @property {boolean} [wireframe] Wireframe render mode.
  */
 
 // ---------------------------------------------------------------------
@@ -50,10 +58,20 @@ function parseRGB(hex) {
 /**
  * Creates the plane geomtery.
  *
- * @param {number} width - Width of the plane
- * @param {number} depth - depth of the plane
- * @param {number[]} density - Level of detail of the plane geometry
- * @returns {object} Plane geometry BufferInfo
+ * This plane is created for WEBGL clip space, this means it has a width
+ * and depth of 2 and the positions of the vertices go from -1 to 1 in
+ * the X and Y axis, while the Z axis goes from 0 to 1 to match the
+ * default near and far values for the depth buffer.
+ *
+ * Note though that I am not using the depth buffer since enabling the
+ * depth test increases GPU usage. Since the depth test is disabled, I
+ * had to order the vertices back to front (far to near) to get the
+ * correct order of the fragments.
+ *
+ * @param {number} width Width of the plane
+ * @param {number} depth depth of the plane
+ * @param {number[]} density Level of detail of the plane geometry
+ * @returns {WaveGradientGeometry} Plane geometry
  */
 function createGeometry(width, depth, density) {
   const gridX = Math.ceil(density[0] * width);
@@ -65,15 +83,7 @@ function createGeometry(width, depth, density) {
   const indexCount = 3 * 2 * gridX * gridZ;
   const indices = new ArrayBuffer(4 * indexCount);
 
-  // This plane is created for WEBGL clip space, this means it has a
-  // width and depth of 2 and the positions of the vertices go from -1
-  // to 1 in the X and Y axis, while the Z axis goes from 0 to 1 to
-  // match the default near and far values for the depth buffer.
-  //
-  // Note though that I am not using the depth buffer since enabling the
-  // depth test in `gl.enable(gl.DEPTH_TEST)` increases GPU usage. Since
-  // the depth test is disabled, I had to order the vertices back to
-  // front (far to near) to get the correct order of the fragments.
+  // Create the vertex positions
   for (let z = gridZ, i = 0, view = new DataView(positions); z >= 0; z--) {
     const v = z / gridZ;
     const clipY = v * 2 - 1;
@@ -85,6 +95,7 @@ function createGeometry(width, depth, density) {
     }
   }
 
+  // Create the indices
   const verticesAcross = gridX + 1;
   for (let z = 0, i = 0, view = new DataView(indices); z < gridZ; z++) {
     for (let x = 0; x < gridX; x++, i += 6) {
