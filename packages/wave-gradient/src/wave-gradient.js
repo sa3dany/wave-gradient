@@ -25,120 +25,13 @@ function parseRGB(hex) {
     : null;
 }
 
-/**
- * Creates the uniforms for the WebGL program.
- *
- * @param {WebGL2RenderingContext} gl rendering context
- * @param {WaveGradientOptions} options options
- * @returns {object} uniforms
- */
-function createUniforms(gl, options) {
-  const program = gl.getParameter(gl.CURRENT_PROGRAM);
-  if (!program) {
-    throw new Error("Could not get active WebGL program");
-  }
-
-  const uniforms = {
-    u_Amplitude: {
-      value: options.amplitude,
-      type: "1f",
-    },
-    u_BaseColor: {
-      value: parseRGB(options.colors[0]),
-      type: "3f",
-    },
-    u_Realtime: {
-      value: options.time,
-      type: "1f",
-    },
-    u_Resolution: {
-      value: [gl.canvas.clientWidth, gl.canvas.clientHeight],
-      type: "2f",
-    },
-    u_Seed: {
-      value: options.seed,
-      type: "1f",
-    },
-    u_ShadowPower: {
-      value: 6,
-      type: "1f",
-    },
-    u_WaveLayers: {
-      value: new Array(9)
-        .fill({
-          color: { value: [0, 0, 0], type: "3f" },
-          isSet: { value: false, type: "1i" },
-          noiseCeil: { value: 0, type: "1f" },
-          noiseFloor: { value: 0, type: "1f" },
-          noiseFlow: { value: 0, type: "1f" },
-          noiseFreq: { value: [0, 0], type: "2f" },
-          noiseSeed: { value: 0, type: "1f" },
-          noiseSpeed: { value: 0, type: "1f" },
-        })
-        .map((layer, i) => {
-          if (i >= options.colors.length - 1) return layer;
-          const j = i + 1;
-          return {
-            color: { value: parseRGB(options.colors[j]), type: "3f" },
-            isSet: { value: true, type: "1i" },
-            noiseCeil: { value: 0.63 + 0.07 * j, type: "1f" },
-            noiseFloor: { value: 0.1, type: "1f" },
-            noiseFlow: { value: 6.5 + 0.3 * j, type: "1f" },
-            noiseFreq: {
-              value: [
-                2 + j / options.colors.length,
-                3 + j / options.colors.length,
-              ],
-              type: "2f",
-            },
-            noiseSeed: { value: options.seed + 10 * j, type: "1f" },
-            noiseSpeed: { value: 11 + 0.3 * j, type: "1f" },
-          };
-        }),
-    },
-  };
-
-  for (const [name, uniform] of Object.entries(uniforms)) {
-    const createSetter = (name, type) => {
-      const uniformX = `uniform${type}`;
-      const location = gl.getUniformLocation(program, name);
-      return (value) => {
-        Array.isArray(value)
-          ? gl[uniformX](location, ...value)
-          : gl[uniformX](location, value);
-      };
-    };
-
-    if (
-      Array.isArray(uniform.value) &&
-      uniform.value.every((v) => typeof v === "object")
-    ) {
-      uniform.value.forEach((member, i) => {
-        const structName = name;
-        for (const [name, uniform] of Object.entries(member)) {
-          uniform.set = createSetter(
-            `${structName}[${i}].${name}`,
-            uniform.type
-          );
-          uniform.set(uniform.value);
-        }
-      });
-    } else {
-      uniform.set = createSetter(name, uniform.type);
-      uniform.set(uniform.value);
-    }
-  }
-
-  return uniforms;
-}
-
 // ---------------------------------------------------------------------
 // ClipSpace
 // ---------------------------------------------------------------------
 
 /**
- * Class that encapsulates the creation and state management of WebGL
- * programs, attributes and unifroms.
+ * Class that encapsulates the creation and state management of a WebGL
+ * programa and related attributes and unifroms.
  */
 class ClipSpace {
   /**
@@ -192,8 +85,14 @@ class ClipSpace {
     /** @private */
     this.setElements(config.elements);
 
-    // /** @private */
-    // this.setupUniforms(config.uniforms);
+    /**
+     * @private
+     * @type {Object<string, Function>}
+     */
+    this._uniforms = {};
+
+    /** @private */
+    this.setupUniforms(config.uniforms);
   }
 
   /**
@@ -329,6 +228,64 @@ class ClipSpace {
     }
 
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elements, gl.STATIC_DRAW);
+  }
+
+  /**
+   * @param {string} name uniform name
+   * @param {undefined} type uniform type
+   * @returns {Function} uniform setter function
+   */
+  createUniformSetter(name, type) {
+    const { gl, program } = this;
+    const uniformX = `uniform${type}`;
+    const location = gl.getUniformLocation(program, name);
+    return (value) => {
+      Array.isArray(value)
+        ? gl[uniformX](location, ...value)
+        : gl[uniformX](location, value);
+    };
+  }
+
+  /**
+   * Creates the uniforms for the WebGL program.
+   *
+   * @param {object} uniforms uniforms
+   */
+  setupUniforms(uniforms) {
+    for (const [name, uniform] of Object.entries(uniforms)) {
+      const isStruct =
+        Array.isArray(uniform.value) &&
+        uniform.value.every((v) => typeof v === "object");
+
+      if (isStruct) {
+        uniform.value.forEach((member, i) => {
+          const structName = name;
+          const prefixedStructName = ClipSpace.prefixName(name, "u_");
+          for (const [name, uniform] of Object.entries(member)) {
+            const key = `${structName}[${i}].${name}`;
+            const prefixedKey = `${prefixedStructName}[${i}].${name}`;
+            const setter = this.createUniformSetter(prefixedKey, uniform.type);
+            this._uniforms[key] = setter;
+            setter(uniform.value);
+          }
+        });
+      } else {
+        const prefixedName = ClipSpace.prefixName(name, "u_");
+        const setter = this.createUniformSetter(prefixedName, uniform.type);
+        this._uniforms[name] = setter;
+        setter(uniform.value);
+      }
+    }
+  }
+
+  /**
+   * Setter for uniforms.
+   *
+   * @param {string} uniformName uniform name
+   * @param {any} newValue new value
+   */
+  setUniform(uniformName, newValue) {
+    this._uniforms[uniformName](newValue);
   }
 
   /**
@@ -509,7 +466,62 @@ export class WaveGradient {
       shaders: [vert, frag],
       attributes: { position: geometry.positions },
       elements: geometry.indices,
-      uniforms: {},
+      uniforms: {
+        amplitude: {
+          value: amplitude,
+          type: "1f",
+        },
+        baseColor: {
+          value: parseRGB(colors[0]),
+          type: "3f",
+        },
+        realtime: {
+          value: time,
+          type: "1f",
+        },
+        resolution: {
+          value: [gl.canvas.clientWidth, gl.canvas.clientHeight],
+          type: "2f",
+        },
+        seed: {
+          value: seed,
+          type: "1f",
+        },
+        shadowPower: {
+          value: 6,
+          type: "1f",
+        },
+        waveLayers: {
+          value: new Array(9)
+            .fill({
+              color: { value: [0, 0, 0], type: "3f" },
+              isSet: { value: false, type: "1i" },
+              noiseCeil: { value: 0, type: "1f" },
+              noiseFloor: { value: 0, type: "1f" },
+              noiseFlow: { value: 0, type: "1f" },
+              noiseFreq: { value: [0, 0], type: "2f" },
+              noiseSeed: { value: 0, type: "1f" },
+              noiseSpeed: { value: 0, type: "1f" },
+            })
+            .map((layer, i) => {
+              if (i >= colors.length - 1) return layer;
+              const j = i + 1;
+              return {
+                color: { value: parseRGB(colors[j]), type: "3f" },
+                isSet: { value: true, type: "1i" },
+                noiseCeil: { value: 0.63 + 0.07 * j, type: "1f" },
+                noiseFloor: { value: 0.1, type: "1f" },
+                noiseFlow: { value: 6.5 + 0.3 * j, type: "1f" },
+                noiseFreq: {
+                  value: [2 + j / colors.length, 3 + j / colors.length],
+                  type: "2f",
+                },
+                noiseSeed: { value: seed + 10 * j, type: "1f" },
+                noiseSpeed: { value: 11 + 0.3 * j, type: "1f" },
+              };
+            }),
+        },
+      },
     });
 
     /** @private */
@@ -517,9 +529,6 @@ export class WaveGradient {
 
     /** @private */
     this.clipSpace = clipSpace;
-
-    /** @private */
-    this.uniforms = createUniforms(this.gl, { amplitude, colors, seed, speed });
 
     /** @private */
     this.density = density;
@@ -584,11 +593,11 @@ export class WaveGradient {
     const resized = width !== clientWidth || height !== clientHeight;
 
     if (resized) {
-      // Update canvas, viewport and rrsolution uniform
+      // Update canvas, viewport and resolution uniform
       canvas.width = clientWidth;
       canvas.height = clientHeight;
       gl.viewport(0, 0, clientWidth, clientHeight);
-      this.uniforms.u_Resolution.set([clientWidth, clientHeight]);
+      this.clipSpace.setUniform("resolution", [clientWidth, clientHeight]);
 
       // Create new geometry
       const geometry = WaveGradient.createGeometry(
@@ -633,7 +642,7 @@ export class WaveGradient {
 
     // Update the `time` uniform
     this.time += Math.min(delta, this.frameInterval) * this.speed;
-    this.uniforms.u_Realtime.set(this.time);
+    this.clipSpace.setUniform("realtime", this.time);
 
     // I opted for this approsh instead of registering a callback on
     // `resize`
