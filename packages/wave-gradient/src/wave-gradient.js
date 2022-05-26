@@ -29,24 +29,22 @@ import { vert, frag } from "./shaders";
 // ---------------------------------------------------------------------
 
 /**
- * Converts HEX RGB colors to [R,G,B] array. From three.js source.
+ * Convertx an RGB hex color string to a an array of color values.
  *
- * @param {string} hexString HEX color string
- * @returns {Array<number>} RGB color array
+ * @param {string} hex - hex color string
+ * @returns {number[] | null} color values
  */
-function rgbTo3f(hexString) {
-  const hex = hexString.slice(1);
-  if (hex.length === 3) {
-    const r = parseInt(hex.charAt(0) + hex.charAt(0), 16) / 255;
-    const g = parseInt(hex.charAt(1) + hex.charAt(1), 16) / 255;
-    const b = parseInt(hex.charAt(2) + hex.charAt(2), 16) / 255;
-    return [r, g, b];
-  } else if (hex.length === 6) {
-    const r = parseInt(hex.charAt(0) + hex.charAt(1), 16) / 255;
-    const g = parseInt(hex.charAt(2) + hex.charAt(3), 16) / 255;
-    const b = parseInt(hex.charAt(4) + hex.charAt(5), 16) / 255;
-    return [r, g, b];
-  }
+function parseRGB(hex) {
+  const result =
+    // Full form #ffffff
+    hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i) ||
+    // Short form #fff
+    hex.match(/^#?([a-f\d])([a-f\d])([a-f\d])$/i);
+  return result
+    ? result.slice(1, 4).map((c) => {
+        return parseInt(c.length < 2 ? c + c : c, 16) / 255;
+      })
+    : null;
 }
 
 /**
@@ -212,7 +210,7 @@ function createUniforms(gl, options) {
       type: "1f",
     },
     u_BaseColor: {
-      value: rgbTo3f(options.colors[0]),
+      value: parseRGB(options.colors[0]),
       type: "3f",
     },
     u_Realtime: {
@@ -247,7 +245,7 @@ function createUniforms(gl, options) {
           if (i >= options.colors.length - 1) return layer;
           const j = i + 1;
           return {
-            color: { value: rgbTo3f(options.colors[j]), type: "3f" },
+            color: { value: parseRGB(options.colors[j]), type: "3f" },
             isSet: { value: true, type: "1i" },
             noiseCeil: { value: 0.63 + 0.07 * j, type: "1f" },
             noiseFloor: { value: 0.1, type: "1f" },
