@@ -3,36 +3,6 @@
 import { vert, frag } from "./shaders";
 
 // ---------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------
-
-/** @typedef {number} DOMHighResTimeStamp */
-
-/**
- * WaveGradient geometry
- *
- * @typedef {{
- *   positions: ArrayBuffer,
- *   indices: ArrayBuffer,
- *   count: number
- * }} WaveGradientGeometry
- */
-
-/**
- * WaveGradient options.
- *
- * @typedef {object} WaveGradientOptions
- * @property {number} [amplitude] Gradient waves amplitude.
- * @property {string[]} [colors] Gradient color layers. Limited to 10.
- * @property {number[]} [density] Level of detail of the plane gemotery.
- * @property {number} [fps] Frames per second for rendering.
- * @property {number} [seed] Seed for the noise function.
- * @property {number} [speed] Speed of the gradient waves.
- * @property {number} [time] Initial time of the animation.
- * @property {boolean} [wireframe] Wireframe render mode.
- */
-
-// ---------------------------------------------------------------------
 // Helper functions
 // ---------------------------------------------------------------------
 
@@ -400,6 +370,30 @@ export class WaveGradient {
    */
 
   /**
+   * WaveGradient options.
+   *
+   * @typedef {object} WaveGradientOptions
+   * @property {number} [amplitude] Gradient waves amplitude.
+   * @property {string[]} [colors] Gradient color layers. Limited to 10.
+   * @property {number[]} [density] Level of detail of the plane gemotery.
+   * @property {number} [fps] Frames per second for rendering.
+   * @property {number} [seed] Seed for the noise function.
+   * @property {number} [speed] Speed of the gradient waves.
+   * @property {number} [time] Initial time of the animation.
+   * @property {boolean} [wireframe] Wireframe render mode.
+   */
+
+  /**
+   * WaveGradient geometry
+   *
+   * @typedef {{
+   *   positions: ArrayBuffer,
+   *   indices: ArrayBuffer,
+   *   count: number
+   * }} WaveGradientGeometry
+   */
+
+  /**
    * Create a gradient instance. The element can be canvas HTML element
    * or a css query, in which case the first matching element will be
    * used.
@@ -520,6 +514,8 @@ export class WaveGradient {
       this.attributes.a_Position.indexData = geometry.indices;
     }
   }
+
+  /** @typedef {number} DOMHighResTimeStamp */
 
   /**
    * Renders a frame.
