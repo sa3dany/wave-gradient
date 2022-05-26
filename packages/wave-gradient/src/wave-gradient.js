@@ -63,10 +63,10 @@ function parseRGB(hex) {
  * the X and Y axis, while the Z axis goes from 0 to 1 to match the
  * default near and far values for the depth buffer.
  *
- * Note though that I am not using the depth buffer since enabling the
- * depth test increases GPU usage. Since the depth test is disabled, I
- * had to order the vertices back to front (far to near) to get the
- * correct order of the fragments.
+ * Note that I am not using the depth buffer since enabling the depth
+ * test increases GPU usage (atleat on my laptops's iGPU). Since the
+ * depth test is disabled, I had to order the vertices back to front
+ * (far to near) to get the correct order of the fragments.
  *
  * @param {number} width Width of the plane
  * @param {number} depth depth of the plane
@@ -79,8 +79,8 @@ function createGeometry(width, depth, density) {
 
   // Prepare the typed arrays for the indexed geometry
   const vertexCount = 3 * (gridX + 1) * (gridZ + 1);
-  const positions = new ArrayBuffer(4 * vertexCount);
   const indexCount = 3 * 2 * gridX * gridZ;
+  const positions = new ArrayBuffer(4 * vertexCount);
   const indices = new ArrayBuffer(4 * indexCount);
 
   // Create the vertex positions
@@ -260,9 +260,13 @@ function createUniforms(gl, options) {
 }
 
 // ---------------------------------------------------------------------
-// Clipspace
+// ClipSpace
 // ---------------------------------------------------------------------
 
+/**
+ * Class that encapsulates the creation and state management of WebGL
+ * programs, attributes and unifroms.
+ */
 class ClipSpace {
   /**
    * @param {{
@@ -359,7 +363,7 @@ class ClipSpace {
 }
 
 // ---------------------------------------------------------------------
-// Main Class
+// WaveGradient
 // ---------------------------------------------------------------------
 
 /**
@@ -502,13 +506,14 @@ export class WaveGradient {
     const { gl, gl: { canvas } } = this; // prettier-ignore
     const { clientWidth, clientHeight } = canvas;
 
-    // update the canvas size, viewport, `resolution` uniform and plane
-    // geometry if the size of the canvas changed
     if (canvas.width !== clientWidth || canvas.height !== clientHeight) {
+      // Update canvas, viewport and rrsolution uniform
       canvas.width = clientWidth;
       canvas.height = clientHeight;
       gl.viewport(0, 0, clientWidth, clientHeight);
       this.uniforms.u_Resolution.set([clientWidth, clientHeight]);
+
+      // Update clip space geometry
       const geometry = createGeometry(clientWidth, clientHeight, this.density);
       gl.bufferData(gl.ARRAY_BUFFER, geometry.positions, gl.STATIC_DRAW);
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geometry.indices, gl.STATIC_DRAW);
