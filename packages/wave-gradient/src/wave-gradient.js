@@ -194,8 +194,6 @@ class ClipSpace {
       gl.enableVertexAttribArray(location);
       gl.vertexAttribPointer(location, 3, gl.FLOAT, false, 0, 0);
     }
-
-    this.attributes = attributes;
   }
 
   /**
