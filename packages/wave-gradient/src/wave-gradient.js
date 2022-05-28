@@ -631,6 +631,10 @@ export class WaveGradient {
 
     const delta = now - this.lastFrameTime;
     if (delta < this.frameInterval) {
+      // Resizing is relatively expensive because we have to regenerate
+      // the geometry. So do it on the off frames and add some
+      // randomness to reduce the frequency a little more.
+      if (Math.random() > 0.75 === true) this.resize();
       return;
     }
 
@@ -641,10 +645,6 @@ export class WaveGradient {
     // Update the `time` uniform
     this.time += Math.min(delta, this.frameInterval) * this.speed;
     this.clipSpace.setUniform("realtime", this.time);
-
-    // I opted for this approsh instead of registering a callback on
-    // `resize`
-    this.resize();
 
     // Prepare for & execute the WEBGL draw call
     this.gl.drawElements(
