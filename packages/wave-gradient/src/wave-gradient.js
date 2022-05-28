@@ -14,10 +14,8 @@ import { vert, frag } from "./shaders";
  */
 function parseRGB(hex) {
   const result =
-    // Full form #ffffff
     hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i) ||
-    // Short form #fff
-    hex.match(/^#?([a-f\d])([a-f\d])([a-f\d])$/i);
+    hex.match(/^#?([a-f\d])([a-f\d])([a-f\d])$/i); // Short form #fff
   return result
     ? result.slice(1, 4).map((c) => {
         return parseInt(c.length < 2 ? c + c : c, 16) / 255;
@@ -452,6 +450,18 @@ export class WaveGradient {
     canvas.height = clientHeight;
     gl.viewport(0, 0, clientWidth, clientHeight);
 
+    // Enable culling of back triangle faces
+    gl.enable(gl.CULL_FACE);
+
+    // Not-needed since I am using atleast `mediump` precicion in the
+    // fragment shader
+    gl.disable(gl.DITHER);
+
+    // Enablig depth testing hurts performance in my testing. It is
+    // disabled by default but I am just making the choise explicit for
+    // documentation
+    gl.disable(gl.DEPTH_TEST);
+
     // create the initial plane geometry
     const geometry = WaveGradient.createGeometry(
       clientWidth * density[0],
@@ -557,21 +567,6 @@ export class WaveGradient {
      * @type {number}
      */
     this.time = time;
-
-    // Enable culling of back triangle faces
-    gl.enable(gl.CULL_FACE);
-
-    // Not-needed since I am using atleast `mediump` precicion in the
-    // fragment shader
-    gl.disable(gl.DITHER);
-
-    // Enablig depth testing hurts performance in my testing. It is
-    // disabled by default but I am just making the choise explicit for
-    // documentation
-    gl.disable(gl.DEPTH_TEST);
-
-    // Resize the canvas to the size of the window
-    this.resize();
 
     // Start the render loop
     requestAnimationFrame((now) => {
