@@ -6,6 +6,7 @@
   "exports": {
     ".": "./dist/wave-gradient.js"
   },
+  "types": "./dist/wave-gradient.d.ts",
   "files": [
     "dist"
   ],
@@ -15,7 +16,7 @@
     "directory": "packages/wave-gradient"
   },
   "scripts": {
-    "build": "node scripts/build.js --no-glsl-minify",
+    "build": "node scripts/build.js --no-glsl-minify && tsc",
     "dev": "node scripts/build.js --watch",
     "lint": "eslint src",
     "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
