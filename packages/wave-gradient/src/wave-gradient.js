@@ -119,7 +119,7 @@ class ClipSpace {
    */
   debugPorgram(program) {
     const { gl } = this;
-    const [vs, fs] = gl.getAttachedShaders(program);
+    const [vs, fs] = gl.getAttachedShaders(program) ?? [];
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       throw new Error(
         `can't link WebGL program.
@@ -167,6 +167,20 @@ class ClipSpace {
   }
 
   /**
+   * Creates a WebGL buffer.
+   *
+   * @private
+   * @throws if can't create buffer
+   * @returns {WebGLBuffer} buffer
+   */
+  createBuffer() {
+    const { gl } = this;
+    const buffer = gl.createBuffer();
+    if (!buffer) throw new Error("can't create buffer");
+    return buffer;
+  }
+
+  /**
    * @typedef {{ buffer: WebGLBuffer, location: number }} AttributeInfo
    */
 
@@ -182,15 +196,15 @@ class ClipSpace {
     for (const [name, dataBuffer] of Object.entries(attributes)) {
       const prefixedName = ClipSpace.prefixName(name, "a_");
 
-      const buffer = gl.createBuffer();
-      const location = gl.getAttribLocation(program, prefixedName);
-
-      this._attributes[name] = { buffer, location };
-
+      const buffer = this.createBuffer();
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
       gl.bufferData(gl.ARRAY_BUFFER, dataBuffer, gl.STATIC_DRAW);
+
+      const location = gl.getAttribLocation(program, prefixedName);
       gl.enableVertexAttribArray(location);
       gl.vertexAttribPointer(location, 3, gl.FLOAT, false, 0, 0);
+
+      this._attributes[name] = { buffer, location };
     }
   }
 
@@ -218,17 +232,26 @@ class ClipSpace {
     const { gl } = this;
 
     if (!this._elementBuffer) {
-      const buffer = gl.createBuffer();
-      this._elementBuffer = buffer;
+      const buffer = this.createBuffer();
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+      this._elementBuffer = buffer;
     }
 
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elements, gl.STATIC_DRAW);
   }
 
+  /** @typedef {"1f" | "2f" | "3f" | "1i"} ClipSpaceUniformType */
+
+  /**
+   * @typedef {{
+   *   type: ClipSpaceUniformType,
+   *   value: number | Array<ClipSpaceUniform>,
+   * }} ClipSpaceUniform
+   */
+
   /**
    * @param {string} name uniform name
-   * @param {string} type uniform type
+   * @param {ClipSpaceUniformType} type uniform type
    * @param {any} [initialValue] initial uniform value
    * @returns {Function} uniform setter function
    */
@@ -236,11 +259,17 @@ class ClipSpace {
     const { gl, program } = this;
     const uniformX = `uniform${type}`;
     const location = gl.getUniformLocation(program, name);
-    const setter = (value) => {
-      Array.isArray(value)
-        ? gl[uniformX](location, ...value)
-        : gl[uniformX](location, value);
-    };
+    const setter =
+      /**
+       * @param {number | number[]} value uniform value
+       */
+      (value) => {
+        Array.isArray(value)
+          ? // @ts-ignore
+            gl[uniformX](location, ...value)
+          : // @ts-ignore
+            gl[uniformX](location, value);
+      };
     if (initialValue) setter(initialValue);
     return setter;
   }
@@ -248,27 +277,34 @@ class ClipSpace {
   /**
    * Creates the uniforms for the WebGL program.
    *
-   * @param {object} uniforms uniforms
+   * @param {Object<string, ClipSpaceUniform>} uniforms uniforms
    */
   setupUniforms(uniforms) {
     for (const [name, uniform] of Object.entries(uniforms)) {
       const prefixedName = ClipSpace.prefixName(name, "u_");
 
       switch (uniform.type) {
-        case "struct[]":
-          uniform.value.forEach((member, i) => {
-            const structName = name;
-            const prefixedStructName = prefixedName;
-            for (const [name, uniform] of Object.entries(member)) {
-              const key = `${structName}[${i}].${name}`;
-              const prefixedKey = `${prefixedStructName}[${i}].${name}`;
-              this._uniforms[key] = this.createUniformSetter(
-                prefixedKey,
-                uniform.type,
-                uniform.value
-              );
-            }
-          });
+        case undefined:
+          Array.isArray(uniform.value) &&
+            uniform.value.forEach(
+              /**
+               * @param {*} member struct member
+               * @param {number} i index
+               */
+              (member, i) => {
+                const structName = name;
+                const prefixedStructName = prefixedName;
+                for (const [name, uniform] of Object.entries(member)) {
+                  const key = `${structName}[${i}].${name}`;
+                  const prefixedKey = `${prefixedStructName}[${i}].${name}`;
+                  this._uniforms[key] = this.createUniformSetter(
+                    prefixedKey,
+                    uniform.type,
+                    uniform.value
+                  );
+                }
+              }
+            );
           break;
         default:
           this._uniforms[name] = this.createUniformSetter(
@@ -489,7 +525,6 @@ export class WaveGradient {
         shadowPower: { value: 6, type: "1f" },
         layerCount: { value: colors.length - 1, type: "1i" },
         waveLayers: {
-          type: "struct[]",
           value: colors.slice(1).map((color, i, array) => {
             const r = (i + 1) / array.length + 1;
             return {
@@ -628,9 +663,11 @@ export class WaveGradient {
    * Clears resources used by the gradient instance and stops rendering.
    */
   destroy() {
-    // Delete the clipSpace and context reference
+    // Delete the clipSpace
     this.clipSpace.delete();
-    this.gl = null;
+
+    // @ts-ignore
+    delete this.gl;
 
     // stop rendering. break the requestAnimationFrame loop.
     this.shouldRender = false;
