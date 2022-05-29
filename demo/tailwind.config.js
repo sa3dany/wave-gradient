@@ -10,9 +10,6 @@ module.exports = {
       colors: {
         gray: colors.neutral,
       },
-      fontFamily: {
-        display: ["'Bebas Neue'", "sans-serif"],
-      },
       keyframes: {
         fadein: {
           from: { opacity: "0%" },
@@ -21,5 +18,4 @@ module.exports = {
       },
     },
   },
-  plugins: [],
 };

@@ -48,7 +48,6 @@ export default function DemoPage({ css }) {
         {reducedMotion === false && (
           <WaveGradient
             className="animate-fadein"
-            // --
             colors={colors}
             seed={2411.5}
             time={8000}
