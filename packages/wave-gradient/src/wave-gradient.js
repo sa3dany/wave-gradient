@@ -488,7 +488,7 @@ export class WaveGradient {
           type: "1f",
         },
         resolution: {
-          value: [gl.canvas.clientWidth, gl.canvas.clientHeight],
+          value: [clientWidth, clientHeight],
           type: "2f",
         },
         seed: {
@@ -627,7 +627,7 @@ export class WaveGradient {
     const delta = now - this.lastFrameTime;
     if (delta < this.frameInterval) {
       // Resizing is relatively expensive because we have to regenerate
-      // the geometry. So do it on the off frames and add some
+      // the geometry. So do it on the off-frames and add some
       // randomness to reduce the frequency a little more.
       if (Math.random() > 0.75 === true) this.resize();
       return;
@@ -641,7 +641,7 @@ export class WaveGradient {
     this.time += Math.min(delta, this.frameInterval) * this.speed;
     this.clipSpace.setUniform("realtime", this.time);
 
-    // Prepare for & execute the WEBGL draw call
+    // execute the WebGL draw call
     this.gl.drawElements(
       this.drawMode,
       this.drawCount,
