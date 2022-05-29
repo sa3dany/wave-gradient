@@ -228,18 +228,21 @@ class ClipSpace {
 
   /**
    * @param {string} name uniform name
-   * @param {undefined} type uniform type
+   * @param {string} type uniform type
+   * @param {any} [initialValue] initial uniform value
    * @returns {Function} uniform setter function
    */
-  createUniformSetter(name, type) {
+  createUniformSetter(name, type, initialValue) {
     const { gl, program } = this;
     const uniformX = `uniform${type}`;
     const location = gl.getUniformLocation(program, name);
-    return (value) => {
+    const setter = (value) => {
       Array.isArray(value)
         ? gl[uniformX](location, ...value)
         : gl[uniformX](location, value);
     };
+    if (initialValue) setter(initialValue);
+    return setter;
   }
 
   /**
@@ -249,27 +252,30 @@ class ClipSpace {
    */
   setupUniforms(uniforms) {
     for (const [name, uniform] of Object.entries(uniforms)) {
-      const isStruct =
-        Array.isArray(uniform.value) &&
-        uniform.value.every((v) => typeof v === "object");
+      const prefixedName = ClipSpace.prefixName(name, "u_");
 
-      if (isStruct) {
-        uniform.value.forEach((member, i) => {
-          const structName = name;
-          const prefixedStructName = ClipSpace.prefixName(name, "u_");
-          for (const [name, uniform] of Object.entries(member)) {
-            const key = `${structName}[${i}].${name}`;
-            const prefixedKey = `${prefixedStructName}[${i}].${name}`;
-            const setter = this.createUniformSetter(prefixedKey, uniform.type);
-            this._uniforms[key] = setter;
-            setter(uniform.value);
-          }
-        });
-      } else {
-        const prefixedName = ClipSpace.prefixName(name, "u_");
-        const setter = this.createUniformSetter(prefixedName, uniform.type);
-        this._uniforms[name] = setter;
-        setter(uniform.value);
+      switch (uniform.type) {
+        case "struct[]":
+          uniform.value.forEach((member, i) => {
+            const structName = name;
+            const prefixedStructName = prefixedName;
+            for (const [name, uniform] of Object.entries(member)) {
+              const key = `${structName}[${i}].${name}`;
+              const prefixedKey = `${prefixedStructName}[${i}].${name}`;
+              this._uniforms[key] = this.createUniformSetter(
+                prefixedKey,
+                uniform.type,
+                uniform.value
+              );
+            }
+          });
+          break;
+        default:
+          this._uniforms[name] = this.createUniformSetter(
+            prefixedName,
+            uniform.type,
+            uniform.value
+          );
       }
     }
   }
@@ -475,59 +481,27 @@ export class WaveGradient {
       attributes: { position: geometry.positions },
       elements: geometry.indices,
       uniforms: {
-        amplitude: {
-          value: amplitude,
-          type: "1f",
-        },
-        baseColor: {
-          value: parseRGB(colors[0]),
-          type: "3f",
-        },
-        realtime: {
-          value: time,
-          type: "1f",
-        },
-        resolution: {
-          value: [clientWidth, clientHeight],
-          type: "2f",
-        },
-        seed: {
-          value: seed,
-          type: "1f",
-        },
-        shadowPower: {
-          value: 6,
-          type: "1f",
-        },
+        amplitude: { value: amplitude, type: "1f" },
+        baseColor: { value: parseRGB(colors[0]), type: "3f" },
+        realtime: { value: time, type: "1f" },
+        resolution: { value: [clientWidth, clientHeight], type: "2f" },
+        seed: { value: seed, type: "1f" },
+        shadowPower: { value: 6, type: "1f" },
+        layerCount: { value: colors.length - 1, type: "1i" },
         waveLayers: {
-          value: new Array(9)
-            .fill({
-              color: { value: [0, 0, 0], type: "3f" },
-              isSet: { value: false, type: "1i" },
-              noiseCeil: { value: 0, type: "1f" },
-              noiseFloor: { value: 0, type: "1f" },
-              noiseFlow: { value: 0, type: "1f" },
-              noiseFreq: { value: [0, 0], type: "2f" },
-              noiseSeed: { value: 0, type: "1f" },
-              noiseSpeed: { value: 0, type: "1f" },
-            })
-            .map((layer, i) => {
-              if (i >= colors.length - 1) return layer;
-              const j = i + 1;
-              return {
-                color: { value: parseRGB(colors[j]), type: "3f" },
-                isSet: { value: true, type: "1i" },
-                noiseCeil: { value: 0.63 + 0.07 * j, type: "1f" },
-                noiseFloor: { value: 0.1, type: "1f" },
-                noiseFlow: { value: 6.5 + 0.3 * j, type: "1f" },
-                noiseFreq: {
-                  value: [2 + j / colors.length, 3 + j / colors.length],
-                  type: "2f",
-                },
-                noiseSeed: { value: seed + 10 * j, type: "1f" },
-                noiseSpeed: { value: 11 + 0.3 * j, type: "1f" },
-              };
-            }),
+          type: "struct[]",
+          value: colors.slice(1).map((color, i, array) => {
+            const r = (i + 1) / array.length + 1;
+            return {
+              noiseCeil: { value: 0.63 + 0.07 * (i + 1), type: "1f" },
+              noiseFloor: { value: 0.1, type: "1f" },
+              noiseFlow: { value: 6.5 + 0.3 * (i + 1), type: "1f" },
+              noiseSeed: { value: seed + 10 * (i + 1), type: "1f" },
+              noiseSpeed: { value: 11 + 0.3 * (i + 1), type: "1f" },
+              noiseFreq: { value: [2 + r, 3 + r], type: "2f" },
+              color: { value: parseRGB(color), type: "3f" },
+            };
+          }),
         },
       },
     });

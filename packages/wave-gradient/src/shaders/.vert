@@ -24,15 +24,15 @@ uniform float u_Seed;
 
 const int i_MAX_COLOR_LAYERS = 9;
 uniform vec3 u_BaseColor;
+uniform int u_LayerCount;
 uniform struct WaveLayers {
-  vec3 color;
-  bool isSet;
   float noiseCeil;
   float noiseFloor;
   float noiseFlow;
-  vec2 noiseFreq;
   float noiseSeed;
   float noiseSpeed;
+  vec2 noiseFreq;
+  vec3 color;
 } u_WaveLayers[i_MAX_COLOR_LAYERS];
 
 // ---------------------------------------------------------------------
@@ -84,13 +84,7 @@ void main() {
 
   // Loop though the color layers and belnd whith the previous layer
   // color with an alpha value based on the noise function
-  for (int i = 0; i < i_MAX_COLOR_LAYERS; i++) {
-
-    // Break from loop on the first undefinde wave layer
-    if (!u_WaveLayers[i].isSet) {
-      break;
-    }
-
+  for (int i = 0; i < u_LayerCount; i++) {
     WaveLayers layer = u_WaveLayers[i];
 
     float noise = snoise(vec3(
