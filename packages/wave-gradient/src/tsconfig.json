@@ -1,8 +1,9 @@
 {
   "include": ["**/*.js"],
   "compilerOptions": {
-    "lib": ["DOM", "ES2017"],
     "allowJs": true,
+    "checkJs": true,
+    "lib": ["DOM", "ES2017"],
     "noEmit": true,
     "strict": true
   }
