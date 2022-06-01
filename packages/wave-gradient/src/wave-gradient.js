@@ -28,8 +28,66 @@ function parseRGB(hex) {
 /**
  * Class that encapsulates the creation and state management of a WebGL
  * programa and related attributes and unifroms.
+ *
+ * Some inspiration from [vaneenige's Phenomenon
+ * library](https://github.com/vaneenige/phenomenon).
  */
 class ClipSpace {
+  /**
+   * Creates clip space plane geomtery.
+   *
+   * This plane is created for WEBGL clip space, this means it has a width
+   * and depth of 2 and the positions of the vertices go from -1 to 1 in
+   * the X and Y axis, while the Z axis goes from 0 to 1 to match the
+   * default near and far values for the depth buffer.
+   *
+   * Note that I am not using the depth buffer since enabling the depth
+   * test increases GPU usage (atleat on my laptops's iGPU). Since the
+   * depth test is disabled, I had to order the vertices back to front
+   * (far to near) to get the correct order of the fragments.
+   *
+   * @param {number} widthSegments Width of the plane
+   * @param {number} depthSegments depth of the plane
+   * @returns {WaveGradientGeometry} Plane geometry
+   */
+  static createPlaneGeometry(widthSegments, depthSegments) {
+    const gridX = Math.ceil(widthSegments);
+    const gridZ = Math.ceil(depthSegments);
+
+    // Prepare the typed arrays for the indexed geometry
+    const vertexCount = 3 * (gridX + 1) * (gridZ + 1);
+    const indexCount = 3 * 2 * gridX * gridZ;
+    const positions = new ArrayBuffer(4 * vertexCount);
+    const indices = new ArrayBuffer(4 * indexCount);
+
+    // Create the vertex positions
+    for (let z = gridZ, i = 0, view = new DataView(positions); z >= 0; z--) {
+      const v = z / gridZ;
+      const clipY = v * 2 - 1;
+      for (let x = gridX; x >= 0; x--, i += 3) {
+        const clipX = (x / gridX) * 2 - 1;
+        view.setFloat32((i + 0) * 4, clipX, true);
+        view.setFloat32((i + 1) * 4, clipY, true);
+        view.setFloat32((i + 2) * 4, v, true);
+      }
+    }
+
+    // Create the indices
+    const verticesAcross = gridX + 1;
+    for (let z = 0, i = 0, view = new DataView(indices); z < gridZ; z++) {
+      for (let x = 0; x < gridX; x++, i += 6) {
+        view.setUint32((i + 0) * 4, (z + 0) * verticesAcross + x, true);
+        view.setUint32((i + 1) * 4, (z + 0) * verticesAcross + x + 1, true);
+        view.setUint32((i + 2) * 4, (z + 1) * verticesAcross + x, true);
+        view.setUint32((i + 3) * 4, (z + 0) * verticesAcross + x + 1, true);
+        view.setUint32((i + 4) * 4, (z + 1) * verticesAcross + x + 1, true);
+        view.setUint32((i + 5) * 4, (z + 1) * verticesAcross + x, true);
+      }
+    }
+
+    return { positions, indices, count: indexCount };
+  }
+
   /**
    * Prefixes attribute or uniform names with the given prefix. While
    * also making the name sentence cased.
@@ -342,117 +400,33 @@ class ClipSpace {
 // ---------------------------------------------------------------------
 
 /**
+ * WaveGradient geometry
+ *
+ * @typedef {{
+ *   positions: ArrayBuffer,
+ *   indices: ArrayBuffer,
+ *   count: number
+ * }} WaveGradientGeometry
+ */
+
+/**
+ * WaveGradient options.
+ *
+ * @typedef {object} WaveGradientOptions
+ * @property {number} [amplitude] Gradient waves amplitude.
+ * @property {string[]} [colors] Gradient color layers. Limited to 10.
+ * @property {number[]} [density] Level of detail of the plane gemotery.
+ * @property {number} [fps] Frames per second for rendering.
+ * @property {number} [seed] Seed for the noise function.
+ * @property {number} [speed] Speed of the gradient waves.
+ * @property {number} [time] Initial time of the animation.
+ * @property {boolean} [wireframe] Wireframe render mode.
+ */
+
+/**
  * Class that recreates the https://stripe.com animated gradient.
  */
 export class WaveGradient {
-  /**
-   * Some inspiration from [vaneenige's Phenomenon
-   * library](https://github.com/vaneenige/phenomenon).
-   */
-
-  /**
-   * For reference, the original stripe gradient preset values were:
-   *
-   * time:                   1253106
-   * shadow_power:           6 {canvas.y < 600 ? 5 : 6}
-   * global.noiseSpeed:      5e-6
-   * global.noiseFreq:      [14e-5, 29e-5]
-   * vertDeform.noiseFreq:  [3, 4]
-   * vertDeform.noiseSpeed:  10
-   * vertDeform.noiseFlow:   3
-   * vertDeform.noiseSeed:   5
-   * vertDeform.noiseAmp:    320
-   *
-   * for (i = 1; i < sectionColors.length; i++):
-   *   color:      sectionColors[i]
-   *   noiseCeil:  0.63 + (0.07 * i),
-   *   noiseFloor: 0.1,
-   *   noiseFlow:  6.5 + (0.3 * i),
-   *   noiseFreq: [2 + (i / sectionColors.length),
-   *               3 + (i / sectionColors.length)]
-   *   noiseSeed:  seed + (10 * i),
-   *   noiseSpeed: 11 + (0.3 * i),
-   */
-
-  /**
-   * WaveGradient geometry
-   *
-   * @typedef {{
-   *   positions: ArrayBuffer,
-   *   indices: ArrayBuffer,
-   *   count: number
-   * }} WaveGradientGeometry
-   */
-
-  /**
-   * Creates the plane geomtery.
-   *
-   * This plane is created for WEBGL clip space, this means it has a width
-   * and depth of 2 and the positions of the vertices go from -1 to 1 in
-   * the X and Y axis, while the Z axis goes from 0 to 1 to match the
-   * default near and far values for the depth buffer.
-   *
-   * Note that I am not using the depth buffer since enabling the depth
-   * test increases GPU usage (atleat on my laptops's iGPU). Since the
-   * depth test is disabled, I had to order the vertices back to front
-   * (far to near) to get the correct order of the fragments.
-   *
-   * @param {number} widthSegments Width of the plane
-   * @param {number} depthSegments depth of the plane
-   * @returns {WaveGradientGeometry} Plane geometry
-   */
-  static createGeometry(widthSegments, depthSegments) {
-    const gridX = Math.ceil(widthSegments);
-    const gridZ = Math.ceil(depthSegments);
-
-    // Prepare the typed arrays for the indexed geometry
-    const vertexCount = 3 * (gridX + 1) * (gridZ + 1);
-    const indexCount = 3 * 2 * gridX * gridZ;
-    const positions = new ArrayBuffer(4 * vertexCount);
-    const indices = new ArrayBuffer(4 * indexCount);
-
-    // Create the vertex positions
-    for (let z = gridZ, i = 0, view = new DataView(positions); z >= 0; z--) {
-      const v = z / gridZ;
-      const clipY = v * 2 - 1;
-      for (let x = gridX; x >= 0; x--, i += 3) {
-        const clipX = (x / gridX) * 2 - 1;
-        view.setFloat32((i + 0) * 4, clipX, true);
-        view.setFloat32((i + 1) * 4, clipY, true);
-        view.setFloat32((i + 2) * 4, v, true);
-      }
-    }
-
-    // Create the indices
-    const verticesAcross = gridX + 1;
-    for (let z = 0, i = 0, view = new DataView(indices); z < gridZ; z++) {
-      for (let x = 0; x < gridX; x++, i += 6) {
-        view.setUint32((i + 0) * 4, (z + 0) * verticesAcross + x, true);
-        view.setUint32((i + 1) * 4, (z + 0) * verticesAcross + x + 1, true);
-        view.setUint32((i + 2) * 4, (z + 1) * verticesAcross + x, true);
-        view.setUint32((i + 3) * 4, (z + 0) * verticesAcross + x + 1, true);
-        view.setUint32((i + 4) * 4, (z + 1) * verticesAcross + x + 1, true);
-        view.setUint32((i + 5) * 4, (z + 1) * verticesAcross + x, true);
-      }
-    }
-
-    return { positions, indices, count: indexCount };
-  }
-
-  /**
-   * WaveGradient options.
-   *
-   * @typedef {object} WaveGradientOptions
-   * @property {number} [amplitude] Gradient waves amplitude.
-   * @property {string[]} [colors] Gradient color layers. Limited to 10.
-   * @property {number[]} [density] Level of detail of the plane gemotery.
-   * @property {number} [fps] Frames per second for rendering.
-   * @property {number} [seed] Seed for the noise function.
-   * @property {number} [speed] Speed of the gradient waves.
-   * @property {number} [time] Initial time of the animation.
-   * @property {boolean} [wireframe] Wireframe render mode.
-   */
-
   /**
    * Create a gradient instance. The element can be canvas HTML element
    * or a css query, in which case the first matching element will be
@@ -503,10 +477,34 @@ export class WaveGradient {
     gl.disable(gl.DEPTH_TEST);
 
     // create the initial plane geometry
-    const geometry = WaveGradient.createGeometry(
+    const geometry = ClipSpace.createPlaneGeometry(
       clientWidth * density[0],
       clientHeight * density[1]
     );
+
+    /**
+     * For reference, the original stripe gradient preset values were:
+     *
+     * time:                   1253106
+     * shadow_power:           6 {canvas.y < 600 ? 5 : 6}
+     * global.noiseSpeed:      5e-6
+     * global.noiseFreq:       [14e-5, 29e-5]
+     * vertDeform.noiseFreq:   [3, 4]
+     * vertDeform.noiseSpeed:  10
+     * vertDeform.noiseFlow:   3
+     * vertDeform.noiseSeed:   5
+     * vertDeform.noiseAmp:    320
+     *
+     * for (i = 1; i < sectionColors.length; i++):
+     *   color:      sectionColors[i]
+     *   noiseCeil:  0.63 + (0.07 * i),
+     *   noiseFloor: 0.1,
+     *   noiseFlow:  6.5 + (0.3 * i),
+     *   noiseFreq:  [2 + (i / sectionColors.length),
+     *               3 + (i / sectionColors.length)]
+     *   noiseSeed:  seed + (10 * i),
+     *   noiseSpeed: 11 + (0.3 * i),
+     */
 
     // create the clip space
     const clipSpace = new ClipSpace({
@@ -600,7 +598,7 @@ export class WaveGradient {
       this.clipSpace.setUniform("resolution", [clientWidth, clientHeight]);
 
       // Create new geometry
-      const geometry = WaveGradient.createGeometry(
+      const geometry = ClipSpace.createPlaneGeometry(
         clientWidth * this.density[0],
         clientHeight * this.density[1]
       );
