@@ -25,7 +25,12 @@ export default function DemoPage({ css }) {
   const palette = usePalette();
 
   const [reducedMotion, setReducedMotion] = useState();
-  const [colors, setColors] = useState(["#5a43a8", "#ffc674", "#8fb7f3"]);
+  const [colors, setColors] = useState([
+    "#eaab36",
+    "#f2d768",
+    "#49b3fc",
+    "#a1d093",
+  ]);
 
   // Respect `prefers-reduced-motion`
   useEffect(() => {
