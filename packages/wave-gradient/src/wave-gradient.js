@@ -26,6 +26,32 @@ function parseRGB(hex) {
 // ---------------------------------------------------------------------
 
 /**
+ * @typedef {{
+ *   gl: WebGL2RenderingContext,
+ *   shaders: [string, string],
+ *   attributes: Object<string, ArrayBuffer>,
+ *   elements: ArrayBuffer,
+ *   uniforms: any,
+ * }} ClipSpaceConfig
+ */
+
+/**
+ * @typedef {{
+ *   buffer: WebGLBuffer,
+ *   location: number,
+ * }} AttributeInfo
+ */
+
+/**
+ * @typedef {{
+ *   type: ClipSpaceUniformType,
+ *   value: number | Array<ClipSpaceUniform>,
+ * }} ClipSpaceUniform
+ */
+
+/** @typedef { "1f" | "2f" | "3f" | "1i" } ClipSpaceUniformType */
+
+/**
  * Class that encapsulates the creation and state management of a WebGL
  * programa and related attributes and unifroms.
  *
@@ -100,16 +126,6 @@ class ClipSpace {
   static prefixName(name, prefix) {
     return `${prefix}${name[0].toUpperCase()}${name.slice(1)}`;
   }
-
-  /**
-   * @typedef {{
-   *   gl: WebGL2RenderingContext,
-   *   shaders: [string, string],
-   *   attributes: Object<string, ArrayBuffer>,
-   *   elements: ArrayBuffer,
-   *   uniforms: any,
-   * }} ClipSpaceConfig ClipSpace configuration
-   */
 
   /**
    * @param {ClipSpaceConfig} config configuration
@@ -237,10 +253,6 @@ class ClipSpace {
   }
 
   /**
-   * @typedef {{ buffer: WebGLBuffer, location: number }} AttributeInfo
-   */
-
-  /**
    * Creates the attributes for the WebGL program.
    *
    * @private
@@ -295,15 +307,6 @@ class ClipSpace {
 
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, elements, gl.STATIC_DRAW);
   }
-
-  /** @typedef {"1f" | "2f" | "3f" | "1i"} ClipSpaceUniformType */
-
-  /**
-   * @typedef {{
-   *   type: ClipSpaceUniformType,
-   *   value: number | Array<ClipSpaceUniform>,
-   * }} ClipSpaceUniform
-   */
 
   /**
    * @param {string} name uniform name
