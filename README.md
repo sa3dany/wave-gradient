@@ -1,8 +1,9 @@
-# ![Wave Gradients](art/readme-hero.jpg)
+# ![Wave Gradient](art/readme-hero.jpg)
 
-I really liked the effect of the animated gradients on the
-[stripe.com](https://stripe.com) home page and was curious of how it was
-crated. Turns out it is more complex that it seems at first.
+![npm](https://img.shields.io/npm/v/wave-gradient?style=for-the-badge)
+![npm bundle size](https://img.shields.io/bundlephobia/minzip/wave-gradient?style=for-the-badge)
+
+stripe.com landing page style animated gradients.
 
 ## Usage
 
