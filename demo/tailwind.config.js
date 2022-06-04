@@ -5,7 +5,7 @@ module.exports = {
   theme: {
     extend: {
       animation: {
-        fadein: "fadein 3.5s ease-in-out 0.5s both",
+        fadein: "fadein 1.5s ease-in-out both",
       },
       colors: {
         gray: colors.neutral,

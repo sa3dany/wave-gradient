@@ -43,7 +43,10 @@ export default function DemoPage({ css }) {
       <div className="relative -z-50 -mx-5 h-full overflow-hidden">
         {/* Placeholder using static CSS gradients */}
         <div className="absolute inset-0 overflow-hidden">
-          <div style={css} className="h-full rotate-1 scale-125 blur-3xl" />
+          <div
+            style={css}
+            className="h-full rotate-3 scale-125 blur-3xl saturate-150"
+          />
         </div>
 
         {reducedMotion === false && (
