@@ -1,7 +1,3 @@
-/**
- * Demo ppage showcasing the wave gradients.
- */
-
 import dynamic from "next/dynamic";
 import { getPlaiceholder } from "plaiceholder";
 import { useEffect, useState } from "react";
@@ -48,10 +44,7 @@ export default function DemoPage({ css }) {
         {reducedMotion === false && (
           <WaveGradient
             className="animate-fadein"
-            colors={colors}
-            seed={2411.5}
-            time={8000}
-            wireframe={false}
+            options={{ colors, seed: 2411.5, time: 8000, wireframe: false }}
           />
         )}
       </div>

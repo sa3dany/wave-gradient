@@ -1,10 +1,5 @@
-/**
- * React component for the wave gradients.
- */
-
 import { useEffect, useRef, useState } from "react";
 import { WaveGradient } from "wave-gradient";
-// import glsllint from "../lib/glsllint";
 
 /**
  * WaveGradeints react component.
@@ -16,28 +11,18 @@ export default function WaveGradientsReact(props) {
   const canvasElement = useRef();
 
   // Destructure the props
-  const { colors, seed, speed, time, wireframe, ...rest } = props;
-
-  // useEffect(() => {
-  //   glsllint();
-  // }, []);
+  const { options, ...rest } = props;
 
   /**
    * Initializes the wave gradients object.
    */
   useEffect(() => {
-    const gradient = new WaveGradient(canvasElement.current, {
-      colors,
-      seed,
-      speed,
-      time,
-      wireframe,
-    });
+    const gradient = new WaveGradient(canvasElement.current, options);
 
     return () => {
       gradient.destroy();
     };
-  }, [canvasElement, colors, seed, speed, time, wireframe]);
+  }, [canvasElement, options]);
 
   return (
     <canvas
