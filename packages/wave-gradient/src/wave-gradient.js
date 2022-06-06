@@ -5,7 +5,7 @@ import { vert, frag } from "./shaders";
 // ---------------------------------------------------------------------
 
 /**
- * Convertx an RGB hex color string to a an array of color values.
+ * Converts an RGB hex color string to a an array of color values.
  *
  * @param {string} hex - hex color string
  * @returns {number[] | null} color values
@@ -53,22 +53,22 @@ function parseRGB(hex) {
 
 /**
  * Class that encapsulates the creation and state management of a WebGL
- * programa and related attributes and unifroms.
+ * program and related attributes and uniforms.
  *
- * Some inspiration from [vaneenige's Phenomenon
+ * Some inspiration from [Phenomenon
  * library](https://github.com/vaneenige/phenomenon).
  */
 class ClipSpace {
   /**
-   * Creates clip space plane geomtery.
+   * Creates clip space plane geometry.
    *
-   * This plane is created for WEBGL clip space, this means it has a width
-   * and depth of 2 and the positions of the vertices go from -1 to 1 in
-   * the X and Y axis, while the Z axis goes from 0 to 1 to match the
-   * default near and far values for the depth buffer.
+   * This plane is created for WEBGL clip space, this means it has a
+   * width and depth of 2 and the positions of the vertices go from -1
+   * to 1 in the X and Y axis, while the Z axis goes from 0 to 1 to
+   * match the default near and far values for the depth buffer.
    *
    * Note that I am not using the depth buffer since enabling the depth
-   * test increases GPU usage (atleat on my laptops's iGPU). Since the
+   * test increases GPU usage (at least on my laptops's iGPU). Since the
    * depth test is disabled, I had to order the vertices back to front
    * (far to near) to get the correct order of the fragments.
    *
@@ -189,7 +189,7 @@ class ClipSpace {
    * @throws {Error} if the program did not link successfully
    * @returns {void}
    */
-  debugPorgram(program) {
+  debugProgram(program) {
     const { gl } = this;
     const [vs, fs] = gl.getAttachedShaders(program) ?? [];
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
@@ -224,7 +224,7 @@ class ClipSpace {
 
     try {
       gl.linkProgram(program);
-      this.debugPorgram(program);
+      this.debugProgram(program);
     } catch (linkError) {
       gl.deleteProgram(program);
       throw linkError;
@@ -418,7 +418,7 @@ class ClipSpace {
  * @typedef {object} WaveGradientOptions
  * @property {number} [amplitude] Gradient waves amplitude.
  * @property {string[]} [colors] Gradient color layers. Limited to 10.
- * @property {number[]} [density] Level of detail of the plane gemotery.
+ * @property {number[]} [density] Level of detail of the plane geometry.
  * @property {number} [fps] Frames per second for rendering.
  * @property {number} [seed] Seed for the noise function.
  * @property {number} [speed] Speed of the gradient waves.
@@ -470,12 +470,12 @@ export class WaveGradient {
     // Enable culling of back triangle faces
     gl.enable(gl.CULL_FACE);
 
-    // Not-needed since I am using atleast `mediump` precicion in the
+    // Not-needed since I am using at least `mediump` precision in the
     // fragment shader
     gl.disable(gl.DITHER);
 
-    // Enablig depth testing hurts performance in my testing. It is
-    // disabled by default but I am just making the choise explicit for
+    // Enabling depth testing hurts performance in my testing. It is
+    // disabled by default but I am just making the choice explicit for
     // documentation
     gl.disable(gl.DEPTH_TEST);
 
@@ -583,8 +583,7 @@ export class WaveGradient {
   }
 
   /**
-   * Resize a canvas to match the size it's displayed. Copied from
-   * TWGL.js by greggman.
+   * Resize a canvas to match the size it's displayed.
    *
    * @private
    */
@@ -641,7 +640,7 @@ export class WaveGradient {
       return;
     }
 
-    // I leanred this trick to get a more acurate framerate from:
+    // I learned this trick to get a more acuate framerate from:
     // https://gist.github.com/addyosmani/5434533
     this.lastFrameTime = now - (delta % this.frameInterval);
 

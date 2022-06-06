@@ -1,9 +1,8 @@
 #version 300 es
 // ---------------------------------------------------------------------
 //
-// Vertex shader stage for the wave gradients. This is based on the
-// originalcvertex shader used on stripe.com for their gradients. I've
-// added more commments for clarity.
+// Vertex shader stage. This is based on the original vertex shader used
+// by stripe for their gradient. I've added more comments for clarity.
 //
 // ---------------------------------------------------------------------
 
@@ -15,9 +14,7 @@
 // Uniforms
 // ---------------------------------------------------------------------
 
-// to match precision in fragment shader, `mediump` is used here.
-
-uniform mediump vec2 u_Resolution;
+uniform mediump vec2 u_Resolution; // `mediump` to match fragment shader
 uniform float u_Amplitude;
 uniform float u_Realtime;
 uniform float u_Seed;
@@ -42,10 +39,10 @@ uniform struct WaveLayers {
 in vec3 a_Position;
 
 // ---------------------------------------------------------------------
-// Varying
+// Varying variables
 // ---------------------------------------------------------------------
 
-// These are variables sent to the fragment shader
+// These are variables sent to the fragment shader as inputs
 out vec3 v_Color;
 
 // ---------------------------------------------------------------------
@@ -54,7 +51,7 @@ out vec3 v_Color;
 
 void main() {
 
-  // scale down realtime to a resonable value for animating the noise
+  // scale down realtime to a reasonable value for animating the noise
   float time = u_Realtime * 5e-6;
 
   // Vertex displacement -----------------------------------------------
@@ -66,8 +63,8 @@ void main() {
   float noise = snoise(vec3(
     noiseCoord.x * 3.0 + time * 3.0, noiseCoord.y * 4.0, time * 10.0 + u_Seed));
 
-  // Fades noise value to 0 at the upper edges of the plane and limits
-  // the displacement to positive values.
+  // Fades noise values to 0 at the edges of the plane and limits the
+  // displacement to positive values only.
   noise *= 1.0 - pow(abs(a_Position.y), 2.0);
   noise = max(0.0, noise);
 
@@ -79,11 +76,11 @@ void main() {
 
   // Vertex color ------------------------------------------------------
 
-  // Initialize vertex color with 1st layer color
+  // start with the base color (1st layer)
   v_Color = u_BaseColor;
 
-  // Loop though the color layers and belnd whith the previous layer
-  // color with an alpha value based on the noise function
+  // Blend all the layer colors together using normal blending. Get the
+  // alpha value for each blending step from the noise function.
   for (int i = 0; i < u_LayerCount; i++) {
     WaveLayers layer = u_WaveLayers[i];
 
