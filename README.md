@@ -29,3 +29,11 @@ and [fragment](packages/wave-gradient/src/shaders/.frag) [shaders
 - Ashima Arts and Stefan Gustavson for the [Simplex noise functions](https://github.com/stegu/webgl-noise)
 - Jamie Owen for the GLSL shader [color blending function](https://github.com/jamieowen/glsl-blend)
 - [huemint](https://huemint.com) for the demo color palette generation
+
+## References
+
+- Khronos [reference
+  card](https://www.khronos.org/files/webgl/webgl-reference-card-1_0.pdf)
+- [Working with Simplex
+  Noise](https://cmaher.github.io/posts/working-with-simplex-noise) by
+  Christian Maher
