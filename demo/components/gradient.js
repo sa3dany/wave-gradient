@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { WaveGradient } from "wave-gradient";
 
 /**
- * WaveGradeints react component.
+ * Wave Gradient react component.
  * @param {object} props Gradient options
  * @returns {React.ReactElement}
  */
 export default function WaveGradientsReact(props) {
-  // Used to hold a refernce to the canvas HTML element
+  // Used to hold a reference to the canvas HTML element
   const canvasElement = useRef();
 
   // Destructure the props

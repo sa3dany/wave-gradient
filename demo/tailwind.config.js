@@ -5,13 +5,13 @@ module.exports = {
   theme: {
     extend: {
       animation: {
-        fadein: "fadein 1.5s ease-in-out both",
+        "fade-in": "fade-in 1.5s ease-in-out both",
       },
       colors: {
         gray: colors.neutral,
       },
       keyframes: {
-        fadein: {
+        "fade-in": {
           from: { opacity: "0%" },
           to: { opacity: "100%" },
         },

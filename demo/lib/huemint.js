@@ -48,7 +48,7 @@ export function getPalettes() {
 const DEFAULT_COLORS = ["#ffffff", "#fe30f8", "#dca6ca", "#58bcfe"];
 
 /**
- * Custom hook for use in react componenets.
+ * Custom hook for use in react components.
  *
  * @returns {object}
  */
