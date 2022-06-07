@@ -5,17 +5,89 @@
 
 stripe.com landing page style animated gradients.
 
-## Usage
+## Installation
 
 ```shell
 npm i wave-gradient
 ```
 
+## Usage
+
+```js
+import { WaveGradient } from "wave-gradient";
+
+const canvasElement = document.querySelector("canvas");
+
+try {
+  // Throws if it can't get a WebGL 2.0 context. For example, if the
+  // browser does not support it.
+  const gradient = new WaveGradient(canvasElement, {
+    colors: ["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"],
+    fps: 30,
+    seed: 0,
+    speed: 1.25,
+  });
+} catch (e) {
+  console.error(e);
+}
+```
+
+### Options
+
+| Option    | Type             | Description                           |
+| --------- | ---------------- | ------------------------------------- |
+| amplitude | number           | Gradient waves amplitude              |
+| colors    | string[]         | Gradient color layers. Limited to 10  |
+| density   | [number, number] | Level of detail of the plane geometry |
+| fps       | number           | Frames per second for rendering       |
+| seed      | number           | Seed for the noise function           |
+| speed     | number           | Speed of the gradient waves           |
+| time      | number           | Initial time of the animation         |
+| wireframe | boolean          | Wireframe render mode                 |
+
+#### amplitude
+
+Default: `320`
+
+#### colors
+
+Default: `["#ef008f", "#6ec3f4", "#7038ff", "#ffba27"]`
+
+#### density
+
+Default: `[0.06, 0.16]`
+
+#### fps
+
+Default: `24`
+
+#### seed
+
+Default: `0`
+
+#### speed
+
+Default: `1.25`
+
+#### time
+
+Default: `0`
+
+#### wireframe
+
+Default: `false`
+
+## Browser Compatibility
+
+[WebGL 2.0 compatible browsers.](https://caniuse.com/webgl2)
+
 ## How it works
 
-It's a 3D scene (not really!) with a plane geometry that fills the
-entire viewport and a [vertex](packages/wave-gradient/src/shaders/.vert)
-and [fragment](packages/wave-gradient/src/shaders/.frag) [shaders
+It's a 3D scene [(not
+really)](packages/wave-gradient/src/wave-gradient.js#L79) with a plane
+geometry that fills the entire viewport and a
+[vertex](packages/wave-gradient/src/shaders/.vert) and
+[fragment](packages/wave-gradient/src/shaders/.frag) [shaders
 ](https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_on_the_web/GLSL_Shaders).
 
 ![3D plane rotating gif](https://user-images.githubusercontent.com/21214427/160907503-3cdd110c-ff48-4e2f-965c-d2c5bd173051.gif)
