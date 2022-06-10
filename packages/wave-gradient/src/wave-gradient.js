@@ -179,6 +179,7 @@ class ClipSpace {
    * @private
    * @param {number} type shader type
    * @param {string} source shader source
+   * @throws {Error} if the shader could not be created
    * @returns {WebGLShader} shader
    */
   compileShader(type, source) {
@@ -217,6 +218,7 @@ class ClipSpace {
    *
    * @private
    * @param {[string, string]} shaders vertex & fragment shader sources
+   * @throws {Error} if the program could not be created or linked
    * @returns {WebGLProgram} shader program
    */
   createProgram(shaders) {
@@ -437,6 +439,8 @@ export class WaveGradient {
    *
    * @param {HTMLCanvasElement} canvas - canvas element
    * @param {WaveGradientOptions} options - gradient options
+   * @throws {TypeError} if the canvas element is not a valid canvas element
+   * @throws {Error} if it can't acquire a WebGL 2.0 context
    */
   constructor(canvas, options) {
     // get a WebGL2 rendering context
