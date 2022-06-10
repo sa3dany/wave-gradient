@@ -26,6 +26,16 @@ function parseRGB(hex) {
 // ---------------------------------------------------------------------
 
 /**
+ * Clip space plane geometry
+ *
+ * @typedef {{
+ *   positions: ArrayBuffer,
+ *   indices: ArrayBuffer,
+ *   count: number
+ * }} ClipSpacePlaneGeometry
+ */
+
+/**
  * @typedef {{
  *   gl: WebGL2RenderingContext,
  *   shaders: [string, string],
@@ -74,7 +84,7 @@ class ClipSpace {
    *
    * @param {number} widthSegments Width of the plane
    * @param {number} depthSegments depth of the plane
-   * @returns {WaveGradientGeometry} Plane geometry
+   * @returns {ClipSpacePlaneGeometry} Plane geometry
    */
   static createPlaneGeometry(widthSegments, depthSegments) {
     const gridX = Math.ceil(widthSegments);
@@ -401,16 +411,6 @@ class ClipSpace {
 // ---------------------------------------------------------------------
 // WaveGradient
 // ---------------------------------------------------------------------
-
-/**
- * WaveGradient geometry
- *
- * @typedef {{
- *   positions: ArrayBuffer,
- *   indices: ArrayBuffer,
- *   count: number
- * }} WaveGradientGeometry
- */
 
 /**
  * WaveGradient options.
