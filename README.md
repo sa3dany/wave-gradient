@@ -1,7 +1,8 @@
 # [![Wave Gradient](art/readme-hero.jpg)](https://wave-gradient.netlify.app/)
 
 [![npm](https://img.shields.io/npm/v/wave-gradient?style=for-the-badge)](https://www.npmjs.com/package/wave-gradient)
-[![npm bundle size](https://img.shields.io/bundlephobia/minzip/wave-gradient?style=for-the-badge)](#)
+[![npm bundle
+size](https://img.shields.io/bundlephobia/minzip/wave-gradient?style=for-the-badge)](https://bundlephobia.com/package/wave-gradient)
 
 stripe.com landing page style animated gradients.
 
