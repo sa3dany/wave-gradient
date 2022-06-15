@@ -85,7 +85,7 @@ Default: `false`
 ## How it works
 
 It's a 3D scene [(not
-really)](packages/wave-gradient/src/wave-gradient.js#L79) with a plane
+really)](packages/wave-gradient/src/wave-gradient.js#L89) with a plane
 geometry that fills the entire viewport and a
 [vertex](packages/wave-gradient/src/shaders/.vert) and
 [fragment](packages/wave-gradient/src/shaders/.frag) [shaders
