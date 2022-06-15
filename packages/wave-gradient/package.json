@@ -5,6 +5,7 @@
   "exports": {
     ".": "./dist/wave-gradient.js"
   },
+  "sideEffects": false,
   "types": "./dist/wave-gradient.d.ts",
   "files": [
     "dist"
