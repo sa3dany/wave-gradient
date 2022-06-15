@@ -428,18 +428,20 @@ class ClipSpace {
  * @property {boolean} [wireframe] Wireframe render mode.
  */
 
+/** @typedef {number} DOMHighResTimeStamp */
+
 /**
  * Class that recreates the https://stripe.com animated gradient.
  */
 export class WaveGradient {
   /**
-   * Create a gradient instance. The element can be canvas HTML element
-   * or a css query, in which case the first matching element will be
-   * used.
+   * Create a gradient instance. The element must be a canvas HTML
+   * element.
    *
    * @param {HTMLCanvasElement} canvas - canvas element
    * @param {WaveGradientOptions} options - gradient options
-   * @throws {TypeError} if the canvas element is not a valid canvas element
+   * @throws {TypeError} if the canvas element is not a valid canvas
+   * element
    * @throws {Error} if it can't acquire a WebGL 2.0 context
    */
   constructor(canvas, options) {
@@ -587,7 +589,8 @@ export class WaveGradient {
   }
 
   /**
-   * Resize a canvas to match the size it's displayed.
+   * Resize the canvas (and geometry) to match the size it's displayed
+   * at.
    *
    * @private
    */
@@ -618,8 +621,6 @@ export class WaveGradient {
     }
   }
 
-  /** @typedef {number} DOMHighResTimeStamp */
-
   /**
    * Renders a frame.
    *
@@ -628,6 +629,7 @@ export class WaveGradient {
    */
   render(now) {
     if (this.shouldRender) {
+      // Enqueue the next frame
       requestAnimationFrame((now) => {
         this.render(now);
       });
