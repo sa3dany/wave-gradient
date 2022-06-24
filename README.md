@@ -102,9 +102,11 @@ geometry that fills the entire viewport and a
 - Ashima Arts and Stefan Gustavson for the [Simplex noise functions](https://github.com/stegu/webgl-noise)
 - Jamie Owen for the GLSL shader [color blending function](https://github.com/jamieowen/glsl-blend)
 - [huemint](https://huemint.com) for the demo color palette generation
+- Laurent Le Brun's [Shader_Minifier](https://github.com/laurentlb/Shader_Minifier)
 
 ## References
 
+- Greggman's [WebGL2 Fundamentals](https://webgl2fundamentals.org)
 - Khronos [reference
   card](https://www.khronos.org/files/webgl/webgl-reference-card-1_0.pdf)
 - [Working with Simplex
